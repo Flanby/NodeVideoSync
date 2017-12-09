@@ -88,7 +88,7 @@ exports.exec = function(req, res) {
     var urldata = url.parse(req.url, true), name = urldata.pathname;
     req.query = urldata.query;
     
-    console.log("Request route : \""+req.method+"\":\""+name+"\"");
+    //console.log("Request route : \""+req.method+"\":\""+name+"\"");
     
     if (routes.static.hasOwnProperty(req.method) === true && routes.static[req.method].hasOwnProperty(name) === true)
         return routes.static[req.method][name](req, res);
