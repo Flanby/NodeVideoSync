@@ -1,0 +1,20 @@
+{
+  "name": "nodevideosync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://Flanby@bitbucket.org/Flanby/nodevideosync.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/Flanby/nodevideosync#readme",
+  "dependencies": {
+    "socket.io": "^2.0.4",
+    "video.js": "^6.4.0"
+  }
+}
