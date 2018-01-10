@@ -1,0 +1,36 @@
+body, html {
+    width: 100%;
+    background: #202F37;
+    margin: 0;
+}
+
+.msgbox {
+    background: #2A3941;
+    margin: auto;
+    width: 100%;
+    height: 200px;
+    overflow-y: auto;
+}
+
+.msgbox .msg {
+    color: #e4e3d1;
+    width: 100%;
+    padding: 2px 5%;
+    box-sizing: border-box;
+}
+
+.msgbox .msg.info {
+    color: #FF7FB8;
+}
+
+.msgbox .msg:nth-child(even) {
+    background: rgb(50, 64, 71);
+}
+
+textarea {
+    width: 100%;
+}
+
+.video-js {
+    margin: auto;
+}

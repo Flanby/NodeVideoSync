@@ -79,9 +79,67 @@ function handler (req, res) {
     }
 }
 
+var users = [];
+var ready = [];
+
 io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
+    socket.on('login', function (data) {
+        if (data.pseudo.length > 60) {
+            socket.emit("pseudoInvalide");
+            return ;
+        }
+        for (var i = 0; i < users.length; i++)
+            if (users[i].name == data.pseudo && users[i].socket.id != socket.id) {
+                socket.emit("pseudoInvalide");
+                return ;
+            }
+
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+                io.emit("changeName", {old: users[i].name, new: users[i].name = data.pseudo});
+                return ;
+            }
+        users.push({"socket": socket, name: data.pseudo});
+        io.emit("newUser", {name: data.pseudo});
+    });
+
+    socket.on('disconnect', function () {
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+                socket.broadcast.emit("userLeave", {name: users[i].name});
+
+                var tmp = [];
+
+                for (var y = users.length; i <= y; y--) {
+                    if (y == i) {
+                        tmp.pop();
+                        users.concat(tmp.reverse());
+                    }
+                    else
+                        tmp.push(users.pop());
+                }
+                return ;
+            }
+    });
+
+    socket.on('chatMsg', function (data) {
+        if (data.msg.length == 0)
+            return;
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+                socket.broadcast.emit("chatMsg", {msg: "<b>"+users[i].name+":</b> "+data.msg});
+                return ;
+            }
+        socket.emit("pseudoInvalide");
+    });
+
+
+    socket.on('ready', function (data) {
+        ready++;
+        console.log("Nombre de ready: "+ready);
+    });
+
+    socket.on('my other event', function (data) {
+        console.log(data);
+    });
 });
