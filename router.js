@@ -21,7 +21,7 @@ function addStaticRoute(request, name, callback) {
 }
 
 function addDynamicRoute(request, name, callback) {
-    var type = {none: "[^/]", int: "[0-9]", str: "[A-Za-z0-9_]"};
+    var type = {none: "[^/]", int: "[0-9]", str: "[A-Za-z0-9_]", path:"."};
     if (routes.dynamic.hasOwnProperty(request) === false)
         routes.dynamic[request] = {};
 
@@ -47,7 +47,7 @@ function addDynamicRoute(request, name, callback) {
                 return console.warn("Routes Params Error: invalid arg \"%s\" in route \"%s\" ", elem, name);
 
             if (param[0] == "type") {
-                if (["int", "str"].indexOf(param[1]) == -1)
+                if (["int", "str", "path"].indexOf(param[1]) == -1)
                     return console.warn("Routes Params Error: invalid type \"%s\" in route \"%s\" ", param[1], name);
                 options.type = param[1];
             }
