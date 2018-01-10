@@ -132,4 +132,13 @@ window.onload = function() {
         }
         window.setTimeout(function() { receve = false; }, 500)
     });
+
+    // Option 
+    document.querySelector("form.size").onsubmit = function() {
+        video.width(this.querySelector("input.w").value);
+        video.height(this.querySelector("input.h").value);
+        return false;
+    };
+    document.querySelector("input.w").value = window.innerWidth;
+    document.querySelector("form.size").onsubmit();
 }
