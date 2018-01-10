@@ -23,6 +23,10 @@ body, html {
     color: #FF7FB8;
 }
 
+.msgbox .video-info {
+    color: #2FBCEB;
+}
+
 .msgbox .msg:nth-child(even) {
     background: rgb(50, 64, 71);
 }

@@ -18,11 +18,13 @@ window.onload = function() {
         return true;
     }
     
-    function addMsg(msg, isInfo = false) {
+    function addMsg(msg, isInfo = 0) {
         var div = document.createElement('div');
 
-        if (isInfo)
+        if (isInfo == 1)
             div.classList.add("info");
+        if (isInfo == 2)
+            div.classList.add("video-info");
         div.classList.add("msg");
 
         div.innerHTML = msg;
@@ -42,6 +44,8 @@ window.onload = function() {
         return btoa(str).substr(0, length);
     }
 
+    // Chat/User
+
     socket.emit('login', { "pseudo": pseudo = prompt("Please enter your name", 'Flan '+randName())});
 
     socket.on("pseudoInvalide", function() {
@@ -49,15 +53,15 @@ window.onload = function() {
     });
     
     socket.on('changeName', function (data) {
-        addMsg("<b>"+data.old+"</b> is now known as <b>"+data.new+"</b>", true);
+        addMsg("<b>"+data.old+"</b> is now known as <b>"+data.new+"</b>", 1);
     });
     
     socket.on('newUser', function (data) {
-        addMsg("<b>"+data.name+"</b> is now online", true);
+        addMsg("<b>"+data.name+"</b> is now online", 1);
     });
 
     socket.on('userLeave', function (data) {
-        addMsg("<b>"+data.name+"</b> is now offline", true);
+        addMsg("<b>"+data.name+"</b> is now offline", 1);
     });
     
     socket.on('chatMsg', function (data) {
@@ -70,4 +74,62 @@ window.onload = function() {
         socket.emit('ready');
     });
 
+    // Video
+
+    function timeConvertion(time) {
+        var date = new Date(null);
+        date.setTime(time * 1000);
+        return date.toISOString().substr(11, 8);
+    }
+
+    function setVideoTime(time) {
+        if (Math.abs(video.currentTime() - time) > 0.5)
+            video.currentTime(time);
+    }
+
+    var receve = false;
+    video.on('play', function play() {
+        if (receve)
+            return ;
+        addMsg("<b>"+pseudo+"</b> play the video at "+timeConvertion(video.currentTime()), 2);
+        socket.emit("play", {time: video.currentTime()});
+    });
+
+    socket.on("play", function(data) {
+        receve = true;
+        setVideoTime(data.time);
+        video.play();
+        addMsg("<b>"+data.user+"</b> play the video at "+timeConvertion(data.time), 2);
+        window.setTimeout(function() { receve = false; }, 500)
+    });
+
+    video.on('pause', function () {
+        if (receve)
+            return ;
+        addMsg("<b>"+pseudo+"</b> pause the video at "+timeConvertion(video.currentTime()), 2);
+        socket.emit("pause", {time: video.currentTime()});
+    });
+    
+    socket.on("pause", function(data) {
+        receve = true;
+        setVideoTime(data.time);
+        video.pause();
+        addMsg("<b>"+data.user+"</b> pause the video at "+timeConvertion(data.time), 2);
+        window.setTimeout(function() { receve = false; }, 500)
+    });
+
+    socket.on("currentlyAiring", function(data) {
+        receve = true;
+        if (video.src().replace(/^.*3000(\/video.*)$/g, "$1") != data.src)
+            video.src(data.src);
+        if (data.isplaying) {
+            setVideoTime(data.time + ((Date.now() - data.lastUpdate) / 1000));
+            video.play();
+        }
+        else {
+            setVideoTime(data.time);
+            video.pause();
+        }
+        window.setTimeout(function() { receve = false; }, 500)
+    });
 }

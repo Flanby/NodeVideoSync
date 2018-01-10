@@ -81,10 +81,17 @@ function handler (req, res) {
 
 var users = [];
 var ready = [];
+var currentVideo = {
+    src: "/video",
+    isplaying: false,
+    time: 0,
+    lastUpdate: Date.now()
+};
 
 io.on('connection', function (socket) {
+    // user/chat
     socket.on('login', function (data) {
-        if (data.pseudo.length > 60) {
+        if (typeof data.pseudo == "undefined" || data.pseudo == null || data.pseudo.length > 60) {
             socket.emit("pseudoInvalide");
             return ;
         }
@@ -101,6 +108,7 @@ io.on('connection', function (socket) {
             }
         users.push({"socket": socket, name: data.pseudo});
         io.emit("newUser", {name: data.pseudo});
+        socket.emit("currentlyAiring", currentVideo);
     });
 
     socket.on('disconnect', function () {
@@ -128,6 +136,36 @@ io.on('connection', function (socket) {
         for (var i = 0; i < users.length; i++)
             if (users[i].socket.id == socket.id) {
                 socket.broadcast.emit("chatMsg", {msg: "<b>"+users[i].name+":</b> "+data.msg});
+                return ;
+            }
+        socket.emit("pseudoInvalide");
+    });
+
+    // Video
+
+    socket.on('play', function (data) {
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+
+                currentVideo.isplaying = true;
+                currentVideo.time = data.time;
+                currentVideo.lastUpdate = Date.now();
+
+                socket.broadcast.emit("play", {time: data.time, user: users[i].name});
+                return ;
+            }
+        socket.emit("pseudoInvalide");
+    });
+    
+    socket.on('pause', function (data) {
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+
+                currentVideo.isplaying = false;
+                currentVideo.time = data.time;
+                currentVideo.lastUpdate = Date.now();
+
+                socket.broadcast.emit("pause", {time: data.time, user: users[i].name});
                 return ;
             }
         socket.emit("pseudoInvalide");
