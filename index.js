@@ -19,6 +19,18 @@ router.add("GET", "/", function (req, res) {
     });
 });
 
+router.add("GET", "/public/{file, type=path}", function(req, res) {
+    fs.readFile(__dirname + '/assets/' + req.urlParams.file, function (err, data) {
+        if (err) {
+            res.writeHead(403);
+            return res.end();
+        }
+
+        res.writeHead(200);
+        res.end(data);
+    });
+});
+
 router.add("GET", "/video", function(req, res) {
     var file = path.resolve(__dirname, "assets/Anime.mp4");
 
