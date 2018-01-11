@@ -74,3 +74,16 @@ textarea {
 .option .changeVideo {
     width: 100%;
 }
+
+#videoClub .modal-content {
+    background: #202F37;
+}
+
+#videoClub .choice {
+    background: #2A3941;
+    cursor: pointer;
+}
+
+#videoClub .choice:nth-child(even) {
+    background: rgb(50, 64, 71);
+}
