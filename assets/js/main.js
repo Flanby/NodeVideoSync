@@ -72,9 +72,9 @@ window.onload = function() {
 
     video = videojs(document.querySelector('.video-js'));
 
-    video.ready(function() {
-        socket.emit('ready');
-    });
+    // video.ready(function() {
+    //     socket.emit('ready');
+    // });
 
     // Video
 
@@ -159,13 +159,14 @@ window.onload = function() {
     }
 
     document.querySelector("button.validateYT").onclick = function() {
-        socket.emit("changeVideo", {src: {src: document.querySelector("input.inputYT").value, type: 'video/youtube'}});
+        socket.emit("addToPlaylist", {src: {src: document.querySelector("input.inputYT").value, type: 'video/youtube'}});
         //socket.emit("changeVideo", {src: document.querySelector("input.inputYT").value});
+        $('#videoClubYT').modal('hide');
         document.querySelector("input.inputYT").value = "";
     }
 
     socket.on("videoClubList", function(data) {
-        var box = document.querySelector(".modal-body");
+        var box = document.querySelector("#videoClub .modal-body");
         box.innerHTML = "";
 
         for (var i = 0; i < data.files.length; i++) {
@@ -173,12 +174,48 @@ window.onload = function() {
             div.classList.add("choice");
             div.innerHTML = data.files[i];
             div.onclick = function() {
-                socket.emit("changeVideo", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
+                socket.emit("addToPlaylist", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
                 $('#videoClub').modal('hide');
             }
             box.appendChild(div);
         }
 
         $('#videoClub').modal('show');
+    });
+
+    // Playlist
+
+    document.querySelector("button.playN").onclick = function() {
+        socket.emit("playlistNext");
+    }
+
+    document.querySelector("button.playP").onclick = function() {
+        socket.emit("playlistPrev");
+    }
+
+    document.querySelector("button.playlist").onclick = function() {
+        socket.emit("getPlaylist");
+    }
+
+    socket.on("playlist", function(data) {
+        var box = document.querySelector("#playlist .modal-body");
+        box.innerHTML = "";
+
+        for (var i = 0; i < data.playlist.length; i++) {
+            var div = document.createElement('div');
+            div.classList.add("playVid");
+
+            if (i == data.offset)
+                div.classList.add("current");
+
+            div.innerHTML = data.playlist[i].name;
+            // div.onclick = function() {
+            //     socket.emit("addToPlaylist", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
+            //     $('#videoClub').modal('hide');
+            // }
+            box.appendChild(div);
+        }
+
+        $('#playlist').modal('show');
     });
 }

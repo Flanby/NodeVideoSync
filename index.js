@@ -83,14 +83,16 @@ function handler (req, res) {
 }
 
 var users = [];
-var ready = [];
+var playlist = [];
+
 var currentVideo = {
     user: "n/a",
     name: "none",
     src: "",
     isplaying: false,
     time: 0,
-    lastUpdate: Date.now()
+    lastUpdate: Date.now(),
+    playlistID: -1,
 };
 
 io.on('connection', function (socket) {
@@ -182,18 +184,17 @@ io.on('connection', function (socket) {
         });
     });
 
-    socket.on("changeVideo", function(data) {
+    function prepareVideo(src, func) {
+        var vid = {};
+
         for (var i = 0; i < users.length; i++)
             if (users[i].socket.id == socket.id) {
 
-                currentVideo.user = users[i].name;
-                currentVideo.src = data.src;
-                currentVideo.isplaying = true;
-                currentVideo.time = 0;
-                currentVideo.lastUpdate = Date.now();
+                vid.user = users[i].name;
+                vid.src = src;
 
-                if (currentVideo.src.type == 'video/youtube') {
-                    https.get(currentVideo.src.src, function(resp) {
+                if (vid.src.type == 'video/youtube') {
+                    https.get(vid.src.src, function(resp) {
                         let data = '';
                         
                         // A chunk of data has been recieved.
@@ -202,31 +203,70 @@ io.on('connection', function (socket) {
                                 return;
                             data = (chunk+'').match(/<title>(.*) - YouTube<\/title>/gm);
                             if (data != null) {
-                                currentVideo.name = (""+data).replace(/<title>(.*) - YouTube<\/title>/g, '$1');
-                                io.emit("currentlyAiring", currentVideo);
+                                vid.name = (""+data).replace(/<title>(.*) - YouTube<\/title>/g, '$1');
+                                func(vid);
                                 data = -1;
                             }
                         });
                     }).on("error", (err) => {
-                        currentVideo.name = "none";
-                        io.emit("currentlyAiring", currentVideo);
+                        vid.name = "none";
+                        func(vid);
                     });
                 }
                 else {
-                    currentVideo.name = currentVideo.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
-                    io.emit("currentlyAiring", currentVideo);
+                    vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
+                    func(vid);
                 }
-                return ;
+                return vid;
             }
         socket.emit("pseudoInvalide");
+        return null;
+    }
+
+    function changeVideo(vid) {
+        Object.assign(currentVideo, vid);
+        currentVideo.isplaying = true;
+        currentVideo.time = 0;
+        currentVideo.lastUpdate = Date.now();
+
+        io.emit("currentlyAiring", currentVideo);
+    }
+
+    socket.on("changeVideo", function(data) {
+        prepareVideo(data.src, changeVideo);
     });
 
-    socket.on('ready', function (data) {
-        ready++;
-        console.log("Nombre de ready: "+ready);
+    // Playlist
+
+    socket.on("addToPlaylist", function(data) {
+        prepareVideo(data.src, function(vid) {
+            playlist.push(vid);
+        });
     });
 
-    socket.on('my other event', function (data) {
-        console.log(data);
+    socket.on("getPlaylist", function() {
+        socket.emit("playlist", {playlist: playlist, offset: currentVideo.playlistID});
     });
+
+    socket.on("playlistNext", function() {
+        currentVideo.playlistID++;
+        if (currentVideo.playlistID >= playlist.length) {
+            currentVideo.playlistID = playlist.length - 1
+            return ;
+        }
+
+        changeVideo(playlist[currentVideo.playlistID]);
+    });
+    
+    socket.on("playlistPrev", function() {
+        currentVideo.playlistID--;
+        if (currentVideo.playlistID < 0) {
+            currentVideo.playlistID = 0;
+            return ;
+        }
+
+        changeVideo(playlist[currentVideo.playlistID]);
+    });
+
+
 });

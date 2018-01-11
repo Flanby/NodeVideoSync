@@ -75,29 +75,34 @@ textarea {
     display: none;
 }
 
-.option .changeVideo, .option .changeVideoYT  {
+.option .changeVideo, .option .changeVideoYT, .option .btn-group, .option .playlist  {
     width: 100%;
 }
 
-#videoClub .modal-content {
+.option .playP, .option .playN {
+    width: 50%;
+}
+
+#videoClub .modal-content, #videoClubYT .modal-content, #playlist .modal-content {
     background: #202F37;
 }
-#videoClub .modal-body {
+
+#videoClub .modal-body, #playlist .modal-body {
     padding: 0;
 }
 
-#videoClub .choice {
+#videoClub .choice, #playlist .playVid {
     padding: 10px 20px;
     vertical-align: middle;
     background: #2A3941;
     cursor: pointer;
 }
 
-#videoClub .choice:hover {
+#videoClub .choice:hover, #playlist .current {
     font-weight: bold;
     color: #9DFF00;
 }
 
-#videoClub .choice:nth-child(even) {
+#videoClub .choice:nth-child(even), #playlist .playVid:nth-child(even) {
     background: rgb(50, 64, 71);
 }

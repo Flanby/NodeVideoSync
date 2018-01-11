@@ -28,8 +28,13 @@
           <input type=text class="w" size=5 value="1920"> X <input type=text class="h" size=5 value="720"><input type=submit><hr>
         </form>
         <!-- data-toggle="modal" data-target="#videoClub" -->
-        <button class="btn btn-primary changeVideo">Change Video</button>
-        <button class="btn btn-danger changeVideoYT" data-toggle="modal" data-target="#videoClubYT">YouTube Video</button>
+        <button class="btn btn-primary changeVideo">Change Video</button><br>
+        <button class="btn btn-danger changeVideoYT" data-toggle="modal" data-target="#videoClubYT">YouTube Video</button><br>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button class="btn btn-secondary playP">Prev</button>
+          <button class="btn btn-secondary playN">Next</button>
+        </div><br>
+        <button class="btn btn-success playlist">Playlist</button>
       </div>
     </div>
 
@@ -73,5 +78,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal Playlist -->
+    <div class="modal fade" id="playlist" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Playlist</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+  
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
   </body>
 </html>
