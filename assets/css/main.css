@@ -40,6 +40,10 @@ input, textarea {
     color: #2FBCEB;
 }
 
+.msgbox .video-title {
+    color: #9DFF00;
+}
+
 .msgbox .msg:nth-child(even) {
     background: rgb(50, 64, 71);
 }

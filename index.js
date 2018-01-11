@@ -84,6 +84,7 @@ function handler (req, res) {
 var users = [];
 var ready = [];
 var currentVideo = {
+    name: "n/a",
     src: "",
     isplaying: false,
     time: 0,
@@ -183,6 +184,7 @@ io.on('connection', function (socket) {
         for (var i = 0; i < users.length; i++)
             if (users[i].socket.id == socket.id) {
 
+                currentVideo.name = users[i].name;
                 currentVideo.src = "/video/"+data.src;
                 currentVideo.isplaying = true;
                 currentVideo.time = 0;

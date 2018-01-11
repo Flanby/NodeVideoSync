@@ -25,9 +25,11 @@ window.onload = function() {
             div.classList.add("info");
         if (isInfo == 2)
             div.classList.add("video-info");
+        if (isInfo == 3)
+            div.classList.add("video-title");
         div.classList.add("msg");
 
-        div.innerHTML = msg;
+        div.innerHTML = "["+new Date().toLocaleTimeString()/*.toISOString().substr(11, 12)*/+"] "+msg;
 
         var isDown = (msgbox.scrollTop == msgbox.scrollHeight - msgbox.offsetHeight);
 
@@ -119,6 +121,8 @@ window.onload = function() {
     });
 
     socket.on("currentlyAiring", function(data) {
+        if (data.src.length == 0)
+            return ;
         receve = true;
         if (video.src().replace(/^.*3000(\/video.*)$/g, "$1") != data.src)
             video.src(data.src);
@@ -130,6 +134,8 @@ window.onload = function() {
             setVideoTime(data.time);
             video.pause();
         }
+
+        addMsg("Current video <b>"+data.src.replace(/^.*\/video\/(.*)$/g, "$1")+"</b> added by <b>"+data.name+"</b> at <b>"+timeConvertion(video.currentTime())+"</b>", 3);
         window.setTimeout(function() { receve = false; }, 500)
     });
 
