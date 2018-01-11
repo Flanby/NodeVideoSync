@@ -228,6 +228,7 @@ io.on('connection', function (socket) {
         currentVideo.isplaying = true;
         currentVideo.time = 0;
         currentVideo.lastUpdate = Date.now();
+        currentVideo.ended = 0;
 
         io.emit("currentlyAiring", currentVideo);
     }
@@ -248,7 +249,7 @@ io.on('connection', function (socket) {
         socket.emit("playlist", {playlist: playlist, offset: currentVideo.playlistID});
     });
 
-    socket.on("playlistNext", function() {
+    function nextVid() {
         currentVideo.playlistID++;
         if (currentVideo.playlistID >= playlist.length) {
             currentVideo.playlistID = playlist.length - 1
@@ -256,7 +257,9 @@ io.on('connection', function (socket) {
         }
 
         changeVideo(playlist[currentVideo.playlistID]);
-    });
+    }
+
+    socket.on("playlistNext", nextVid);
     
     socket.on("playlistPrev", function() {
         currentVideo.playlistID--;
@@ -268,5 +271,14 @@ io.on('connection', function (socket) {
         changeVideo(playlist[currentVideo.playlistID]);
     });
 
+    // Video Ended
 
+    socket.on("videoEnded", function() {
+        currentVideo.ended++;
+
+        console.log(currentVideo.ended);
+
+        if (currentVideo.ended == users.length)
+            nextVid();
+    });
 });

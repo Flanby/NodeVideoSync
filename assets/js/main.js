@@ -106,7 +106,7 @@ window.onload = function() {
     });
 
     video.on('pause', function () {
-        if (receve)
+        if (receve || video.currentTime() >= video.duration())
             return ;
         addMsg("<b>"+pseudo+"</b> pause the video at "+timeConvertion(video.currentTime()), 2);
         socket.emit("pause", {time: video.currentTime()});
@@ -217,5 +217,14 @@ window.onload = function() {
         }
 
         $('#playlist').modal('show');
+    });
+
+    // Video Ended
+
+    video.on("ended", function() {
+        receve = true;
+        console.log("Ended");        
+        socket.emit("videoEnded");
+        window.setTimeout(function() { receve = false; }, 500)
     });
 }
