@@ -78,10 +78,20 @@ textarea {
 #videoClub .modal-content {
     background: #202F37;
 }
+#videoClub .modal-body {
+    padding: 0;
+}
 
 #videoClub .choice {
+    padding: 10px 20px;
+    vertical-align: middle;
     background: #2A3941;
     cursor: pointer;
+}
+
+#videoClub .choice:hover {
+    font-weight: bold;
+    color: #9DFF00;
 }
 
 #videoClub .choice:nth-child(even) {

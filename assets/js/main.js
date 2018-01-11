@@ -158,11 +158,11 @@ window.onload = function() {
             div.innerHTML = data.files[i];
             div.onclick = function() {
                 socket.emit("changeVideo", {src: this.innerHTML});
+                $('#videoClub').modal('hide');
             }
             box.appendChild(div);
         }
 
         $('#videoClub').modal('show');
-        //document.getElementById("videoClub").
     });
 }

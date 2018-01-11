@@ -84,7 +84,7 @@ function handler (req, res) {
 var users = [];
 var ready = [];
 var currentVideo = {
-    src: "/video/Anime.mp4",
+    src: "",
     isplaying: false,
     time: 0,
     lastUpdate: Date.now()
