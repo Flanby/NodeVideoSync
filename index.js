@@ -125,10 +125,11 @@ io.on('connection', function (socket) {
 
                 var tmp = [];
 
-                for (var y = users.length; i <= y; y--) {
+                for (var y = users.length - 1; i <= y; y--) {
                     if (y == i) {
-                        tmp.pop();
-                        users.concat(tmp.reverse());
+                        users.pop();
+                        users = users.concat(tmp.reverse());
+                        return;
                     }
                     else
                         tmp.push(users.pop());
@@ -146,6 +147,13 @@ io.on('connection', function (socket) {
                 return ;
             }
         socket.emit("pseudoInvalide");
+    });
+
+    socket.on('listUsers', function () {
+        var list = [];
+        for (var i = 0; i < users.length; i++)
+            list.push(users[i].name);
+        socket.emit("userslist", {users: list});
     });
 
     // Video
@@ -276,9 +284,7 @@ io.on('connection', function (socket) {
     socket.on("videoEnded", function() {
         currentVideo.ended++;
 
-        console.log(currentVideo.ended);
-
-        if (currentVideo.ended == users.length)
+        if (currentVideo.ended >= users.length)
             nextVid();
     });
 });

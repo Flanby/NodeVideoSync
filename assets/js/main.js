@@ -4,6 +4,8 @@ window.onload = function() {
     var socket = io(document.location.origin),
         msgbox = document.getElementsByClassName("msgbox")[0],
         pseudo = "";
+        
+    video = videojs(document.querySelector('.video-js'));
 
     document.getElementsByClassName("inputChat")[0].onkeypress = function(evt) {
         if (!evt.shiftKey && evt.key == "Enter") {
@@ -49,28 +51,74 @@ window.onload = function() {
     // Chat/User
 
     socket.emit('login', { "pseudo": pseudo = prompt("Please enter your name", 'Flan '+randName())});
+    socket.emit("listUsers");
 
     socket.on("pseudoInvalide", function() {
         socket.emit('login', { "pseudo": pseudo = prompt("Please enter another name", 'Flan '+randName())});
+        socket.emit("listUsers");
     });
     
     socket.on('changeName', function (data) {
         addMsg("<b>"+data.old+"</b> is now known as <b>"+data.new+"</b>", 1);
+
+        var list = document.querySelector(".usersList");
+        for (var i = 0; list.childElementCount > i; i++)
+            if (list.children[i].innerHTML == data.old) {
+                list.children[i].innerHTML = data.new;
+                break;
+            }
     });
     
     socket.on('newUser', function (data) {
         addMsg("<b>"+data.name+"</b> is now online", 1);
+
+        var li = document.createElement('li');
+        li.innerHTML = data.name;
+
+        document.querySelector(".usersList").appendChild(li);
     });
 
     socket.on('userLeave', function (data) {
         addMsg("<b>"+data.name+"</b> is now offline", 1);
+
+        var list = document.querySelector(".usersList");
+        for (var i = 0; list.childElementCount > i; i++)
+            if (list.children[i].innerHTML == data.name) {
+                list.removeChild(list.children[i]);
+                break;
+            }
     });
     
     socket.on('chatMsg', function (data) {
         addMsg(data.msg);
     });
 
-    video = videojs(document.querySelector('.video-js'));
+    socket.on("userslist", function(data) {
+        var li = null, id = -1, list = document.querySelector(".usersList");
+        list.innerHTML = "";
+        
+        if (pseudo != "") {
+            li = document.createElement('li');
+            li.innerHTML = pseudo;
+            li.classList.add = "self";
+            id = data.users.findIndex(function(a) { return a == pseudo });
+
+            if (id == -1)
+                li.classList.add = "offline";
+            list.appendChild(li);
+        }
+
+        console.log(data);
+
+        for (var i = 0; i < data.users.length; i++) {
+            if (i == id)
+                continue;
+            li = document.createElement('li');
+            li.innerHTML = data.users[i];
+
+            list.appendChild(li);
+        }
+    });
 
     // video.ready(function() {
     //     socket.emit('ready');
@@ -208,7 +256,7 @@ window.onload = function() {
             if (i == data.offset)
                 div.classList.add("current");
 
-            div.innerHTML = data.playlist[i].name;
+            div.innerHTML = "<img src='/public/img/"+(data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />"+data.playlist[i].name;
             // div.onclick = function() {
             //     socket.emit("addToPlaylist", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
             //     $('#videoClub').modal('hide');

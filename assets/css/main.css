@@ -66,9 +66,31 @@ textarea {
     flex: 1;
 }
 
-.option {
+.option, .ulistBloc {
     padding: 5px 10px;
+    width: 250px;
+}
+
+.option {
     border-left: dashed 4px #202F37;
+}
+
+.ulistBloc {
+    border-right: dashed 4px #202F37;
+    overflow-y: auto;
+}
+
+.ulistBloc .usersList {
+    padding-left: 10px;
+}
+
+.ulistBloc .usersList li {
+    list-style: none;
+    font-weight: bold;
+}
+
+.ulistBloc .usersList li.self {
+    color: #2FBCEB;
 }
 
 .option input[type=submit] {
@@ -77,6 +99,7 @@ textarea {
 
 .option .changeVideo, .option .changeVideoYT, .option .btn-group, .option .playlist  {
     width: 100%;
+    margin-bottom: 2px;
 }
 
 .option .playP, .option .playN {
@@ -105,4 +128,27 @@ textarea {
 
 #videoClub .choice:nth-child(even), #playlist .playVid:nth-child(even) {
     background: rgb(50, 64, 71);
+}
+
+#playlist .playVid img {
+    max-height: 25px;
+    max-width: 25px;
+    margin-right: 10px;
+}
+
+.modal-content .close {
+    color: #e4e3d1;
+    text-shadow: none;
+}
+
+.modal-content .close:hover {
+    color: #2FBCEB;
+}
+
+.self {
+    color: #9DFF00;
+}
+
+.offline {
+    color: #FF7FB8;
 }
