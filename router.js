@@ -102,7 +102,7 @@ exports.exec = function(req, res) {
 
                     req.urlParams = {};
                     for (var j = 1; j < search.length; j++)
-                        req.urlParams[routes.dynamic[req.method][keys[i]].params[j-1].name] = search[j];
+                        req.urlParams[routes.dynamic[req.method][keys[i]].params[j-1].name] = decodeURI(search[j]);
                 }
 
                 return routes.dynamic[req.method][keys[i]].callback(req, res);

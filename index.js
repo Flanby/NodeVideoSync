@@ -31,14 +31,16 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
     });
 });
 
-router.add("GET", "/video", function(req, res) {
-    var file = path.resolve(__dirname, "assets/Anime.mp4");
+router.add("GET", "/video/{video, type=path}", function(req, res) {
+    var file = path.resolve(__dirname, "assets/video/"+req.urlParams.video);
 
     fs.stat(file, function(err, stats) {
         if (err) {
             if (err.code === 'ENOENT') {
                 // 404 Error if file not found
-                return res.sendStatus(404);
+                console.log(req.urlParams.video);
+                res.writeHead(404);
+                return res.end();
             }
             res.end(err);
         }
@@ -82,7 +84,7 @@ function handler (req, res) {
 var users = [];
 var ready = [];
 var currentVideo = {
-    src: "/video",
+    src: "/video/Anime.mp4",
     isplaying: false,
     time: 0,
     lastUpdate: Date.now()
@@ -171,6 +173,26 @@ io.on('connection', function (socket) {
         socket.emit("pseudoInvalide");
     });
 
+    socket.on("videoClub", function() {
+        fs.readdir(path.resolve(__dirname, "assets/video/"), function(err, items) {
+            socket.emit("videoClubList", {files: items});
+        });
+    });
+
+    socket.on("changeVideo", function(data) {
+        for (var i = 0; i < users.length; i++)
+            if (users[i].socket.id == socket.id) {
+
+                currentVideo.src = "/video/"+data.src;
+                currentVideo.isplaying = true;
+                currentVideo.time = 0;
+                currentVideo.lastUpdate = Date.now();
+
+                io.emit("currentlyAiring", currentVideo);
+                return ;
+            }
+        socket.emit("pseudoInvalide");
+    });
 
     socket.on('ready', function (data) {
         ready++;

@@ -1,8 +1,22 @@
+@font-face {
+    font-family: 'maxlf-regularregular';
+    src: url('http://176.31.101.163/assets/font/maxlf-regular-webfont.woff2') format('woff2'),
+         url('http://176.31.101.163/assets/font/maxlf-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 body, html {
     width: 100%;
     background: #202F37;
     margin: 0;
     color: #e4e3d1;
+    font-family: Maxlf, "Segoe UI", Arial, sans-serif;
+}
+
+input, textarea {
+    line-height: 1;
 }
 
 .msgbox {
@@ -38,7 +52,7 @@ textarea {
     margin: auto;
 }
 
-.container {
+.flexBoxCont {
     background: #2A3941;
     display: flex;
     align-items: stretch;
@@ -55,4 +69,8 @@ textarea {
 
 .option input[type=submit] {
     display: none;
+}
+
+.option .changeVideo {
+    width: 100%;
 }

@@ -141,4 +141,28 @@ window.onload = function() {
     };
     document.querySelector("input.w").value = window.innerWidth;
     document.querySelector("form.size").onsubmit();
+
+    // Video Club
+
+    document.querySelector("button.btn.btn-primary.changeVideo").onclick = function() {
+        socket.emit("videoClub");
+    }
+
+    socket.on("videoClubList", function(data) {
+        var box = document.querySelector(".modal-body");
+        box.innerHTML = "";
+
+        for (var i = 0; i < data.files.length; i++) {
+            var div = document.createElement('div');
+            div.classList.add("choice");
+            div.innerHTML = data.files[i];
+            div.onclick = function() {
+                socket.emit("changeVideo", {src: this.innerHTML});
+            }
+            box.appendChild(div);
+        }
+
+        $('#videoClub').modal('show');
+        //document.getElementById("videoClub").
+    });
 }
