@@ -3,6 +3,7 @@ var io = require('socket.io')(app);
 var fs = require('fs');
 var path = require("path");
 var router = require('./router');
+var https = require("https");
 
 app.listen(3000);
 
@@ -84,7 +85,8 @@ function handler (req, res) {
 var users = [];
 var ready = [];
 var currentVideo = {
-    name: "n/a",
+    user: "n/a",
+    name: "none",
     src: "",
     isplaying: false,
     time: 0,
@@ -184,13 +186,36 @@ io.on('connection', function (socket) {
         for (var i = 0; i < users.length; i++)
             if (users[i].socket.id == socket.id) {
 
-                currentVideo.name = users[i].name;
-                currentVideo.src = "/video/"+data.src;
+                currentVideo.user = users[i].name;
+                currentVideo.src = data.src;
                 currentVideo.isplaying = true;
                 currentVideo.time = 0;
                 currentVideo.lastUpdate = Date.now();
 
-                io.emit("currentlyAiring", currentVideo);
+                if (currentVideo.src.type == 'video/youtube') {
+                    https.get(currentVideo.src.src, function(resp) {
+                        let data = '';
+                        
+                        // A chunk of data has been recieved.
+                        resp.on('data', (chunk) => {
+                            if (data == -1)
+                                return;
+                            data = (chunk+'').match(/<title>(.*) - YouTube<\/title>/gm);
+                            if (data != null) {
+                                currentVideo.name = (""+data).replace(/<title>(.*) - YouTube<\/title>/g, '$1');
+                                io.emit("currentlyAiring", currentVideo);
+                                data = -1;
+                            }
+                        });
+                    }).on("error", (err) => {
+                        currentVideo.name = "none";
+                        io.emit("currentlyAiring", currentVideo);
+                    });
+                }
+                else {
+                    currentVideo.name = currentVideo.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
+                    io.emit("currentlyAiring", currentVideo);
+                }
                 return ;
             }
         socket.emit("pseudoInvalide");

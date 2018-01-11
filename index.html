@@ -2,8 +2,9 @@
   <head>
     <script src="/socket.io/socket.io.js"></script>
     
-    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet">
-    <script src="//vjs.zencdn.net/5.19/video.min.js"></script>
+    <link href="//vjs.zencdn.net/5.19/video-js.min.css" rel="stylesheet" crossorigin="anonymous">
+    <script src="//vjs.zencdn.net/5.19/video.min.js" crossorigin="anonymous"></script>
+    <script src="/public/js/Youtube.min.js" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
@@ -14,7 +15,7 @@
     <link href="/public/css/main.css" rel="stylesheet">
   </head>
   <body>
-    <video controls class="video-js" data-setup='{"controls": true, "autoplay": false, "preload": "auto"}'></video>
+    <video controls class="video-js" data-setup='{"techOrder": ["html5", "youtube"], "controls": true, "autoplay": false, "preload": "auto"}'></video>
 
     <div class="flexBoxCont">
       <div class="takePlace">
@@ -28,10 +29,11 @@
         </form>
         <!-- data-toggle="modal" data-target="#videoClub" -->
         <button class="btn btn-primary changeVideo">Change Video</button>
+        <button class="btn btn-danger changeVideoYT" data-toggle="modal" data-target="#videoClubYT">YouTube Video</button>
       </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Video club -->
     <div class="modal fade" id="videoClub" tabindex="-1" role="dialog" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -46,6 +48,27 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Video club -->
+    <div class="modal fade" id="videoClubYT" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">YouTube Video Club</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <input type="text" class="form-control inputYT" placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-danger validateYT">Ajouter</button>
           </div>
         </div>
       </div>

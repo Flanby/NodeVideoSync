@@ -75,7 +75,7 @@ textarea {
     display: none;
 }
 
-.option .changeVideo {
+.option .changeVideo, .option .changeVideoYT  {
     width: 100%;
 }
 

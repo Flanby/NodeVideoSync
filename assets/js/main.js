@@ -124,7 +124,11 @@ window.onload = function() {
         if (data.src.length == 0)
             return ;
         receve = true;
-        if (video.src().replace(/^.*3000(\/video.*)$/g, "$1") != data.src)
+
+        var newvidstr = typeof data.src == "string" ? data.src : data.src.src;
+        if (typeof video.src() == "undefined" || 
+            (typeof video.src() == "object" && video.src().src != newvidstr) || 
+            (typeof video.src() == "string" && video.src().replace(/^.*3000(\/video.*)$/g, "$1") != data.src))
             video.src(data.src);
         if (data.isplaying) {
             setVideoTime(data.time + ((Date.now() - data.lastUpdate) / 1000));
@@ -135,7 +139,7 @@ window.onload = function() {
             video.pause();
         }
 
-        addMsg("Current video <b>"+data.src.replace(/^.*\/video\/(.*)$/g, "$1")+"</b> added by <b>"+data.name+"</b> at <b>"+timeConvertion(video.currentTime())+"</b>", 3);
+        addMsg("Current video <b>"+data.name+"</b> added by <b>"+data.user+"</b> at <b>"+timeConvertion(video.currentTime())+"</b>", 3);
         window.setTimeout(function() { receve = false; }, 500)
     });
 
@@ -154,6 +158,12 @@ window.onload = function() {
         socket.emit("videoClub");
     }
 
+    document.querySelector("button.validateYT").onclick = function() {
+        socket.emit("changeVideo", {src: {src: document.querySelector("input.inputYT").value, type: 'video/youtube'}});
+        //socket.emit("changeVideo", {src: document.querySelector("input.inputYT").value});
+        document.querySelector("input.inputYT").value = "";
+    }
+
     socket.on("videoClubList", function(data) {
         var box = document.querySelector(".modal-body");
         box.innerHTML = "";
@@ -163,7 +173,7 @@ window.onload = function() {
             div.classList.add("choice");
             div.innerHTML = data.files[i];
             div.onclick = function() {
-                socket.emit("changeVideo", {src: this.innerHTML});
+                socket.emit("changeVideo", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
                 $('#videoClub').modal('hide');
             }
             box.appendChild(div);
