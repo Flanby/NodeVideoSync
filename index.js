@@ -48,7 +48,7 @@ router.add("GET", "/video/{video, type=path}", function(req, res) {
         var range = req.headers.range;
         if (!range) {
             // 416 Wrong range
-            return res.sendStatus(416);
+            return res.writeHead(416);
         }
         var positions = range.replace(/bytes=/, "").split("-");
         var start = parseInt(positions[0], 10);
@@ -250,6 +250,9 @@ io.on('connection', function (socket) {
     socket.on("addToPlaylist", function(data) {
         prepareVideo(data.src, function(vid) {
             playlist.push(vid);
+
+            if (currentVideo.playlistID == -1)
+                nextVid();
         });
     });
 

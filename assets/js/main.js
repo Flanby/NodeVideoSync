@@ -1,10 +1,9 @@
-var video;
+var video, socket, msgbox, pseudo;
 
 window.onload = function() {
-    var socket = io(document.location.origin),
-        msgbox = document.getElementsByClassName("msgbox")[0],
-        pseudo = "";
-        
+    socket = io(document.location.origin);
+    msgbox = document.getElementsByClassName("msgbox")[0];
+    pseudo = "";
     video = videojs(document.querySelector('.video-js'));
 
     document.getElementsByClassName("inputChat")[0].onkeypress = function(evt) {
@@ -107,8 +106,6 @@ window.onload = function() {
                 li.classList.add = "offline";
             list.appendChild(li);
         }
-
-        console.log(data);
 
         for (var i = 0; i < data.users.length; i++) {
             if (i == id)
@@ -270,8 +267,7 @@ window.onload = function() {
     // Video Ended
 
     video.on("ended", function() {
-        receve = true;
-        console.log("Ended");        
+        receve = true; 
         socket.emit("videoEnded");
         window.setTimeout(function() { receve = false; }, 500)
     });
