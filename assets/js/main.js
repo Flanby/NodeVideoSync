@@ -184,6 +184,9 @@ window.onload = function() {
             video.pause();
         }
 
+        if (data.sub != "")
+            video.addRemoteTextTrack({src: "/sub/" + data.sub, srclang: "fr", mode: 'showing', default: true}, false)
+
         addMsg("Current video <b>"+data.name+"</b> added by <b>"+data.user+"</b> at <b>"+timeConvertion(video.currentTime())+"</b>", 3);
         window.setTimeout(function() { receve = false; }, 500)
     });

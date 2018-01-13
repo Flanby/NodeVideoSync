@@ -5,7 +5,10 @@ var path = require("path");
 var router = require('./router');
 var https = require("https");
 
-var videoExt = ["avi", "mkv", "ogg", "mp4", "webm"];
+var videoExt = ["avi", "mkv", "ogg", "mp4", "webm"],
+    videoFolder = "assets/video/",
+    subFolder = "assets/sub/";
+
 app.listen(3000);
 
 router.add("GET", "/", function (req, res) {
@@ -34,12 +37,12 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
 });
 
 router.add("GET", "/video/{video, type=path}", function(req, res) {
-    if (videoExt.indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase())) {
+    if (videoExt.indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()) == -1) {
         res.writeHead(404);
         return res.end();
     }
 
-    var file = path.resolve(__dirname, "assets/video/"+req.urlParams.video);
+    var file = path.resolve(__dirname, videoFolder + req.urlParams.video);
 
     fs.stat(file, function(err, stats) {
         if (err) {
@@ -78,7 +81,7 @@ router.add("GET", "/video/{video, type=path}", function(req, res) {
 });
 
 router.add("GET", "/sub/{sub, type=path}", function(req, res) {
-    fs.readFile(__dirname + '/assets/sub/' + req.urlParams.sub, function (err, data) {
+    fs.readFile(__dirname + "/" + subFolder + req.urlParams.sub, function (err, data) {
         if (err || req.urlParams.sub.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase() != "vtt") {
             res.writeHead(404);
             return res.end();
@@ -110,6 +113,7 @@ var currentVideo = {
     time: 0,
     lastUpdate: Date.now(),
     playlistID: -1,
+    sub: ""
 };
 
 io.on('connection', function (socket) {
@@ -204,8 +208,8 @@ io.on('connection', function (socket) {
     });
 
     socket.on("videoClub", function() {
-        fs.readdir(path.resolve(__dirname, "assets/video/"), function(err, items) {
-            socket.emit("videoClubList", {files: items.filter(file => videoExt.indexOf(file.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()))});
+        fs.readdir(path.resolve(__dirname, videoFolder), function(err, items) {
+            socket.emit("videoClubList", {files: [].concat(items).filter(file => videoExt.indexOf(file.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()))});
         });
     });
 
@@ -240,6 +244,12 @@ io.on('connection', function (socket) {
                 }
                 else {
                     vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
+                    try {
+                        fs.accessSync(__dirname + "/" + subFolder + vid.name + '.vtt', fs.constants.R_OK);
+                        vid.sub = vid.name + '.vtt';
+                    } catch (err) {
+                        vid.sub = "";
+                    }
                     func(vid);
                 }
                 return vid;
