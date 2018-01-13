@@ -155,5 +155,5 @@ textarea {
 
 .vjs-text-track-display div div div {
     background-color: transparent !important;
-    text-shadow: #000000 0px 0px 10px;
+    text-shadow: #000000 0px 0px 10px, #000000 0px 0px 10px, #000000 0px 0px 10px, #000000 0px 0px 10px;
 }
