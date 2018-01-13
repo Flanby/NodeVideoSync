@@ -5,6 +5,7 @@ var path = require("path");
 var router = require('./router');
 var https = require("https");
 
+var videoExt = ["avi", "mkv", "ogg", "mp4", "webm"];
 app.listen(3000);
 
 router.add("GET", "/", function (req, res) {
@@ -33,13 +34,17 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
 });
 
 router.add("GET", "/video/{video, type=path}", function(req, res) {
+    if (videoExt.indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase())) {
+        res.writeHead(404);
+        return res.end();
+    }
+
     var file = path.resolve(__dirname, "assets/video/"+req.urlParams.video);
 
     fs.stat(file, function(err, stats) {
         if (err) {
             if (err.code === 'ENOENT') {
                 // 404 Error if file not found
-                console.log(req.urlParams.video);
                 res.writeHead(404);
                 return res.end();
             }
@@ -60,7 +65,7 @@ router.add("GET", "/video/{video, type=path}", function(req, res) {
             "Content-Range": "bytes " + start + "-" + end + "/" + total,
             "Accept-Ranges": "bytes",
             "Content-Length": chunksize,
-            "Content-Type": "video/mp4"
+            "Content-Type": "video/"+req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()
         });
 
         var stream = fs.createReadStream(file, { start: start, end: end })
@@ -70,6 +75,18 @@ router.add("GET", "/video/{video, type=path}", function(req, res) {
                 res.end(err);
             });
         });
+});
+
+router.add("GET", "/sub/{sub, type=path}", function(req, res) {
+    fs.readFile(__dirname + '/assets/sub/' + req.urlParams.sub, function (err, data) {
+        if (err || req.urlParams.sub.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase() != "vtt") {
+            res.writeHead(404);
+            return res.end();
+        }
+
+        res.writeHead(200);
+        res.end(data);
+    });
 });
 
 function handler (req, res) {
@@ -188,7 +205,7 @@ io.on('connection', function (socket) {
 
     socket.on("videoClub", function() {
         fs.readdir(path.resolve(__dirname, "assets/video/"), function(err, items) {
-            socket.emit("videoClubList", {files: items});
+            socket.emit("videoClubList", {files: items.filter(file => videoExt.indexOf(file.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()))});
         });
     });
 
