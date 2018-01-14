@@ -170,6 +170,11 @@ window.onload = function() {
             return ;
         receve = true;
 
+        var tracks = video.textTracks().tracks_;
+        
+        for (var i = 0; i < tracks.length; i++)
+            video.removeRemoteTextTrack(tracks[i]);
+
         var newvidstr = typeof data.src == "string" ? data.src : data.src.src;
         if (typeof video.src() == "undefined" || 
             (typeof video.src() == "object" && video.src().src != newvidstr) || 
@@ -183,7 +188,6 @@ window.onload = function() {
             setVideoTime(data.time);
             video.pause();
         }
-
         if (data.sub != "")
             video.addRemoteTextTrack({src: "/sub/" + data.sub, srclang: "fr", mode: 'showing', default: true}, false)
 

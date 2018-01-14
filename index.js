@@ -221,6 +221,7 @@ io.on('connection', function (socket) {
 
                 vid.user = users[i].name;
                 vid.src = src;
+                vid.sub = "";
 
                 if (vid.src.type == 'video/youtube') {
                     https.get(vid.src.src, function(resp) {
