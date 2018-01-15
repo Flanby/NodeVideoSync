@@ -201,8 +201,14 @@ window.onload = function() {
         video.height(this.querySelector("input.h").value);
         return false;
     };
+
     document.querySelector("input.w").value = window.innerWidth;
     document.querySelector("form.size").onsubmit();
+
+    document.querySelector(".autoResize").onclick = function() {
+        document.querySelector("input.w").value = window.innerWidth;
+        document.querySelector("form.size").onsubmit();
+    };
 
     // Video Club
 
@@ -262,7 +268,9 @@ window.onload = function() {
 
             div.innerHTML = "<img src='/public/img/" + 
                             (data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />" + 
+                            (data.playlist[i].src.type == 'video/youtube' ? "<a href=\"" + data.playlist[i].src.src + "\">" : "") +
                             data.playlist[i].name + 
+                            (data.playlist[i].src.type == 'video/youtube' ? "</a>" : "") +
                             '<button type="button" class="close" data-id="'+data.playlist[i].id+'">&times;</button>';
             div.dataset.id = data.playlist[i].id;
 

@@ -68,7 +68,7 @@ textarea {
 
 .option, .ulistBloc {
     padding: 5px 10px;
-    width: 250px;
+    width: 255px;
 }
 
 .option {
@@ -95,6 +95,17 @@ textarea {
 
 .option input[type=submit] {
     display: none;
+}
+
+.option .autoResize {
+    padding-top: 1px;
+    padding-bottom: 1px;
+    vertical-align: baseline;
+    color: white;
+}
+
+.btn {
+    text-shadow: 0 0 5px black;
 }
 
 .option .changeVideo, .option .changeVideoYT, .option .btn-group, .option .playlist  {
