@@ -104,8 +104,10 @@ function handler (req, res) {
 
 var users = [];
 var playlist = [];
+var idUnique = 1;
 
 var currentVideo = {
+    id: null,
     user: "n/a",
     name: "none",
     src: "",
@@ -277,6 +279,7 @@ io.on('connection', function (socket) {
 
     socket.on("addToPlaylist", function(data) {
         prepareVideo(data.src, function(vid) {
+            vid.id = idUnique++;
             playlist.push(vid);
 
             if (currentVideo.playlistID == -1)
@@ -308,6 +311,24 @@ io.on('connection', function (socket) {
         }
 
         changeVideo(playlist[currentVideo.playlistID]);
+    });
+
+    socket.on("removeFromPlaylist", function(data) {
+        for (var i = 0; i < playlist.length; i++)
+            if (playlist[i].id == data.id) {
+                var tmp = [];
+
+                for (var y = playlist.length - 1; i <= y; y--) {
+                    if (y == i) {
+                        playlist.pop();
+                        playlist = playlist.concat(tmp.reverse());
+                        return;
+                    }
+                    else
+                        tmp.push(playlist.pop());
+                }
+                return ;
+            }
     });
 
     // Video Ended

@@ -260,11 +260,15 @@ window.onload = function() {
             if (i == data.offset)
                 div.classList.add("current");
 
-            div.innerHTML = "<img src='/public/img/"+(data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />"+data.playlist[i].name;
-            // div.onclick = function() {
-            //     socket.emit("addToPlaylist", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
-            //     $('#videoClub').modal('hide');
-            // }
+            div.innerHTML = "<img src='/public/img/" + 
+                            (data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />" + 
+                            data.playlist[i].name + 
+                            '<button type="button" class="close" data-id="'+data.playlist[i].id+'">&times;</button>';
+
+            div.querySelector(".close").onclick = function() {
+                this.parentElement.parentElement.removeChild(this.parentElement);
+                socket.emit("removeFromPlaylist", {id: this.dataset.id});
+            };
             box.appendChild(div);
         }
 

@@ -136,6 +136,12 @@ textarea {
     margin-right: 10px;
 }
 
+#playlist .modal-body .close {
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+
 .modal-content .close {
     color: #e4e3d1;
     text-shadow: none;
