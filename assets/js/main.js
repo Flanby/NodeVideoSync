@@ -274,7 +274,8 @@ window.onload = function() {
                             '<button type="button" class="close" data-id="'+data.playlist[i].id+'">&times;</button>';
             div.dataset.id = data.playlist[i].id;
 
-            div.querySelector(".close").onclick = function() {
+            div.querySelector(".close").onclick = function(event) {
+                event.stopPropagation();
                 this.parentElement.parentElement.removeChild(this.parentElement);
                 socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
             };
