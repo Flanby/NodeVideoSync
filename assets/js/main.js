@@ -264,10 +264,15 @@ window.onload = function() {
                             (data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />" + 
                             data.playlist[i].name + 
                             '<button type="button" class="close" data-id="'+data.playlist[i].id+'">&times;</button>';
+            div.dataset.id = data.playlist[i].id;
 
             div.querySelector(".close").onclick = function() {
                 this.parentElement.parentElement.removeChild(this.parentElement);
-                socket.emit("removeFromPlaylist", {id: this.dataset.id});
+                socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
+            };
+            div.onclick = function() {
+                socket.emit("playVideoPlaylist", {id: this.dataset.id});
+                $("#playlist").modal("hide");
             };
             box.appendChild(div);
         }

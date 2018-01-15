@@ -331,6 +331,14 @@ io.on('connection', function (socket) {
             }
     });
 
+    socket.on("playVideoPlaylist", function(data) {
+        for (var i = 0; i < playlist.length; i++)
+            if (playlist[i].id == data.id) {
+                changeVideo(playlist[currentVideo.playlistID = i]);
+                return ;
+            }
+    });
+
     // Video Ended
 
     socket.on("videoEnded", function() {
