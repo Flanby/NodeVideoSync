@@ -136,6 +136,10 @@ textarea {
     margin-right: 10px;
 }
 
+#playlist .modal-body div {
+    position: relative;
+}
+
 #playlist .modal-body .close {
     position: absolute;
     top: 0;
