@@ -4,6 +4,7 @@ var fs = require('fs');
 var path = require("path");
 var router = require('./router');
 var https = require("https");
+var upload = require('./upload');
 
 var videoExt = ["avi", "mkv", "ogg", "mp4", "webm"],
     videoFolder = "assets/video/",
@@ -35,6 +36,21 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
         res.end(data);
     });
 });
+
+router.add("GET", "/upload", function(req, res) {
+    fs.readFile(__dirname + '/form.html',
+    function (err, data) {
+      if (err) {
+        res.writeHead(500);
+        return res.end('Error loading form.html');
+      }
+  
+      res.writeHead(200);
+      res.end(data);
+    });
+});
+
+router.add("POST", "/upload", upload.upload);
 
 router.add("GET", "/video/{video, type=path}", function(req, res) {
     if (videoExt.indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()) == -1) {
