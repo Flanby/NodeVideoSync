@@ -1,152 +1,204 @@
 var fs = require("fs");
 
 exports.upload = function(req, res) {
-    var bodyData = '';
+    var buffData = Buffer.from([]),
+        meta = {__cnt: 0},
+        contentType = req.headers["content-type"].split(";"), 
+        boundary = null,
+        regexpInput = null,
+        stream = null,
+        lineEnding = null,
+        endReached = false;
+
     req.body = {};
     
-    req.on('data', function (data) {
-        bodyData += data;
-        
-        if(bodyData.length > 1e6) {
-            bodyData = "";
-            res.writeHead(413, {'Content-Type': 'text/plain'});
-            res.end();
-            req.connection.destroy();
-        }
-    });
+    // Check content-type header
+    if (contentType[0] != "multipart/form-data") {
+        res.writeHead(400, {'Content-Type': 'text/plain'});
+        res.end();
+        req.connection.destroy();
+        return;
+    }
 
-    req.on('end', function () {
-        // req.body = querystring.parse(bodyData);
-        
-        try {
-            //console.log(req.headers["content-type"]);
+    // Extract boundary
+    for (var i = 1; i < contentType.length; i++) {
+        if ((boundary = contentType[i].match(/boundary=(\S*)/i)) != null)
+            break;
+    }
+    if (boundary == null) {
+        res.writeHead(400, {'Content-Type': 'text/plain'});
+        res.end();
+        req.connection.destroy();
+        return;
+    }
+    boundary = "--" + boundary[1];
+    
+    // Create File Steam
+    function createFileStream(filename, chunk = null, callback = null) {
+        if (stream == null) {
+            stream = fs.createWriteStream(__dirname + "/assets/upload/" + filename);
+            stream.once('open', function(fd) {
+                // stream.addListener("drain", function() {
+                //     if (callback != null)
+                //         callback();
+                //     req.resume();
+                // });
+                stream.addListener("finish", function() {
+                    receiveData();
+                });
+                stream.addListener("error", function(err) {
+                    console.debug("Got error while writing to file '" + filename + "': ", err);
+                    res.writeHead(500, {'Content-Type': 'text/plain'});
+                    res.end("Internal Error");
+                    req.connection.destroy();
+                });
 
-            var contentType = req.headers["content-type"].split(";"), boundary = null;
-
-            if (contentType[0] != "multipart/form-data") {
-                res.writeHead(400, {'Content-Type': 'text/plain'});
-                res.end();
-                return;
-            }
-
-            for (var i = 1; i < contentType.length; i++) {
-                if ((boundary = contentType[i].match(/boundary=(\S*)/i)) != null)
-                    break;
-            }
-            boundary = boundary[1];
-            
-            var datas = bodyData.split("--" + boundary),
-                regexpInput = null;
-            for (var j = 0; j < datas.length; j++) {
-                if (datas[j].length == 0)
-                    continue;
-                if (regexpInput == null) {
-                    var lineEnding = datas[j].match(/^([\r\n]+)/i)[0];
-                    regexpInput = new RegExp('^'+lineEnding+'([^\r\n]+)('+lineEnding+'.+)?'+lineEnding+''+lineEnding+'([^]*)'+lineEnding+'$', 'i');
-                }
-
-                var data = datas[j],
-                    meta = {};
-
-
-
-                data = regexpInput.exec(data);//data.match(/^[\r\n]{1,2}([^\r\n]+)[\r\n]{1,2}(.*)[\r\n]{1,2}([^]*[^\r\n])[\r\n]{1,2}$/i);
-                if (data == null || data.length != 4) {
-                    console.log("Erreur here / ", data);
-                    continue;
-                }
-
-                var line = data[1].split(";");
-                if (line[0].match(/\s*Content-Disposition: *form-data/i) == null)
-                    console.log("Not 'form-data' : "+line[0]);
-                for (var i = 1; i < line.length; i++) {
-                    if ((line[i] = line[i].match(/^\s*([^=\s]+)="?([^"]+)"?\s*$/i)) == null)
-                        continue;
-                    meta[line[i][1]] = line[i][2];
-                }
-
-                if (typeof meta.name == "undefined") {
-                    console.log("name not found");
-                    continue;
-                }
-
-                if (typeof meta.filename != "undefined") {
-                    req.body[meta.name] = meta.filename;
-
-                    var filecontent = data[3], stream = fs.createWriteStream(__dirname + "/assets/upload/" + meta.filename);
-                    stream.once('open', function(fd) {
-                      stream.write(new Buffer(filecontent));
-                        console.log("First char: ", filecontent[0], ", code: ", filecontent.charCodeAt(0));
-                      stream.end();
+                if (chunk != null)
+                    // wait the next chunk to check for croped boundary before adding it to the file
+                    stream.write(chunk, "binary", function() {
+                        if (callback != null)
+                            callback();
+                        req.resume();
                     });
+                else {
+                    req.resume();
+                }
+            });
+        }
+        else {
+            if (chunk != null) {
+                stream.write(chunk, "binary", function() {
+                    if (callback != null)
+                        callback();
+                    req.resume();
+                });
+            }
+            else {
+                req.resume();
+            }
+        }
+    }
+
+    // Receive Data Chunk
+    function receiveData(chunk = Buffer.from([])) {
+        var pos = -1;
+        console.log("Receive: ",chunk.length);
+
+        var guardrail = 0;
+        do {
+            if (guardrail++ == 20) return ; // Prevent infinite loop
+            pos = Buffer.concat([buffData, chunk], buffData.length + chunk.length).indexOf(boundary);
+            // if the actual data is a file and boundary not found append buff to file
+            if (pos == -1 && meta.__cnt == 2 && typeof meta.filename != "undefined") {
+                if (chunk.length == 0)
+                    return ;
+
+                req.pause();
+                createFileStream(meta.filename, buffData, function() {
+                    buffData = chunk;
+                });
+
+                break ;
+            }
+
+            // if chunk not empty concat chunck
+            if (chunk.length != 0) {
+                buffData = Buffer.concat([buffData, chunk], buffData.length + chunk.length);
+                chunk = Buffer.from([]);
+            }
+
+            // if boundary fisrt, shift it and restart the loop and the meta
+            if (pos == 0) {
+                buffData = Buffer.from(buffData.slice(boundary.length));
+                if (typeof meta.name != "undefined") {
+                    if (typeof meta.filename != "undefined") {
+                        req.body[meta.name] = meta.filename;
+                        stream.end();
+                        stream = null;
+                    }
+                    else
+                        req.body[meta.name] = meta.__data;
+                }
+                else if (meta.__cnt != 0)
+                    console.log("Input not valid: ", meta);
+                console.log(meta);
+                meta = {__cnt: 0};
+                continue;
+            }
+
+            // if line ending not define
+            if (lineEnding == null)
+                lineEnding = ("" + buffData).match(/^([\r\n]+)/i)[0];
+
+            var linePos;
+            while ((linePos = buffData.indexOf(lineEnding)) != -1 && (linePos < pos || pos == -1)) {
+
+                if (linePos == 0) {
+                    // if there was an empty line, data is empty
+                    if (meta.__cnt == 2) {
+                        if (pos == -1)
+                            return ;
+                        meta.__data = "";
+                    }
+                    else
+                        meta.__cnt++;
                 }
                 else {
-                    req.body[meta.name] = data[3];
+                    // if not empty line before then it's meta data
+                    if (meta.__cnt <= 1) {
+                        var line = (buffData.slice(0, linePos) + "").split(";");
+                        if (meta.__cnt == 0 && line[0].match(/\s*Content-Disposition: *form-data/i) == null)
+                            console.log("Not 'form-data' : "+line[0]);
+                        for (var i = 1; i < line.length; i++) {
+                            if ((line[i] = line[i].match(/^\s*([^=\s]+)="?([^"]+)"?\s*$/i)) == null)
+                                continue;
+                            meta[line[i][1]] = line[i][2];
+                        }
+
+                        meta.__cnt = 1;
+                    }
+                    else {
+                        if (pos == -1)
+                            return ;
+
+                        if (typeof meta.filename != "undefined") {
+                            req.pause();
+                            
+                            // if boundary not found write nothing wait the next chunk
+                            if (pos == -1)
+                                createFileStream(meta.filename);
+                            // else chunck the data
+                            else {
+                                chunk = Buffer.from(buffData.slice(0, pos - lineEnding.length));
+                                buffData = Buffer.from(buffData.slice(pos));
+
+                                createFileStream(meta.filename, chunk, function() {
+                                    receiveData();
+                                });
+                            }
+                            return ;
+                        }
+                        else {
+                            meta.__data = "" + buffData.slice(0, pos - lineEnding.length);
+                        }
+                    }
                 }
+
+                buffData = Buffer.from(buffData.slice(linePos + lineEnding.length));
+                if (pos != -1)
+                    pos -= linePos + lineEnding.length;
             }
+        } while (pos != -1);
 
-            console.log(req.body);
-            res.writeHead(200, {"Content-Type": "text/plain"});
-            res.end("bodyData");
-        } catch (e) {
-            res.writeHead(500, {'Content-Type': 'text/plain'});
-            console.log(e);
-            res.end("Internal Error");
+        if (endReached) {
+            if (buffData.length == 0 && chunk.length == 0) {
+                console.log("Ends on:", req.body);
+            }
         }
+    }
+
+    req.on('data', receiveData);
+    req.on('end', function() {
+        endReached = true;
     });
-}
-
-// function parse_multipart(req) {
-//     var parser = multipart.parser();
-
-//     parser.headers = req.headers;
-
-//     req.addListener("data", function(chunk) {
-//         parser.write(chunk);
-//     });
-
-//     req.addListener("end", function() {
-//         parser.close();
-//     });
-
-//     return parser;
-// }
-
-// exports.upload = function(req, res) {
-//     //req.setBodyEncoding("binary");
-
-//     var stream = parse_multipart(req),
-//         fileName = null,
-//         fileStream = null;
-
-//     stream.onPartBegin = function(part) {
-//         console.debug("Started part, name = " + part.name + ", filename = " + part.filename);
-
-//         fileName = __dirname + "/assets/video/" + stream.part.filename;
-//         fileStream = fs.createWriteStream(fileName);
-
-//         fileStream.addListener("error", function(err) {
-//             console.debug("Got error while writing to file '" + fileName + "': ", err);
-//         });
-
-//         fileStream.addListener("drain", function() {
-//             req.resume();
-//         });
-//     };
-
-//     stream.onData = function(chunk) {
-//         req.pause();
-//         //console.debug("Writing chunk");
-//         fileStream.write(chunk, "binary");
-//     };
-
-//     stream.onEnd = function() {
-//         fileStream.addListener("drain", function() {
-//             fileStream.end();
-            
-//             res.sendHeader(200, {"Content-Type": "text/plain"});
-//             res.write("Thanks for playing!");
-//             res.end();
-//         });
-//     };
-// };
+};
