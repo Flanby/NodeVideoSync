@@ -40,7 +40,15 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
 });
 
 upload.setDownloadDir(__dirname + "/assets/upload");
-router.add("POST", "/upload/{tocken, type=str, length=16}", function(req, res) {
+router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
+    if (req.urlParams.token != uploadToken) {
+        req.pause();
+        res.writeHead(401);
+        res.end("Bad Token");
+        return ;
+    }
+
+    uploadToken = null;
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
             res.writeHead(200);
@@ -48,7 +56,7 @@ router.add("POST", "/upload/{tocken, type=str, length=16}", function(req, res) {
         }
         else {
             res.writeHead(400);
-            res.end('Upload Fails');
+            res.end('Upload Fail');
         }
     });
 });
@@ -139,7 +147,7 @@ var uploadToken = null;
 
 io.on('connection', function (socket) {
     // upload
-    socket.on("getUploadTocken", function (data) {
+    socket.on("getUploadToken", function (data) {
         if (typeof data.pass == "undefined") {
             return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
         }
@@ -153,7 +161,7 @@ io.on('connection', function (socket) {
 
         if (data.pass == rootPass) {
             uploadToken = randStr(16);
-            socket.emit("chatMsg", {msg: "<b>Sever:</b> new tocken is <b>" + uploadToken + "</b>", color: 1});
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> new token is <b>" + uploadToken + "</b>", color: 1});
         }
         else 
             socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});

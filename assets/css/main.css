@@ -130,6 +130,8 @@ textarea {
     vertical-align: middle;
     background: #2A3941;
     cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #videoClub .choice:hover, #playlist .current {
@@ -155,6 +157,25 @@ textarea {
     position: absolute;
     top: 0;
     right: 15px;
+}
+
+#upload .select-file {
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    position: relative; 
+    height: auto;
+}
+
+#upload .select-file .progress-bar {
+    position: absolute; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 1;
+}
+
+#upload .select-file .btn {
+    z-index: 2; 
+    width: 100%;
 }
 
 .modal-content .close {

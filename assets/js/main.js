@@ -10,7 +10,7 @@ window.onload = function() {
     var cmds = {
         "/help": {func: displayHelp, params: [], description: "Display this help"},
         "/name": {path: "login", params: ["pseudo"], description: "Change pseudo"},
-        "/getUploadTocken": {path: "getUploadTocken", params: ["pass"], description: "Get the upload token"}
+        "/getUploadToken": {path: "getUploadToken", params: ["pass"], description: "Get the upload token"}
     }
 
     function displayHelp() {
