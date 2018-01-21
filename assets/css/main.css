@@ -117,7 +117,7 @@ textarea {
     width: 50%;
 }
 
-#videoClub .modal-content, #videoClubYT .modal-content, #playlist .modal-content {
+#videoClub .modal-content, #videoClubYT .modal-content, #playlist .modal-content, #upload .modal-content {
     background: #202F37;
 }
 

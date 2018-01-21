@@ -39,21 +39,8 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
     });
 });
 
-router.add("GET", "/upload", function(req, res) {
-    fs.readFile(__dirname + '/form.html',
-    function (err, data) {
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading form.html');
-      }
-  
-      res.writeHead(200);
-      res.end(data);
-    });
-});
-
 upload.setDownloadDir(__dirname + "/assets/upload");
-router.add("POST", "/upload", function(req, res) {
+router.add("POST", "/upload/{tocken, type=str, length=16}", function(req, res) {
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
             res.writeHead(200);
