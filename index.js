@@ -53,6 +53,10 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
         if (typeof rq.body["upload-file"] != "undefined") {
             res.writeHead(200);
             res.end("Succesfully upload \""+rq.body["upload-file"]+"\"");
+            fs.rename(path.resolve(upload.getDownloadDir(), rq.body["upload-file"]), path.resolve(__dirname, videoFolder, rq.body["upload-file"]), function(err) { 
+                if (err)
+                    console.log(err); 
+            });
         }
         else {
             res.writeHead(400);

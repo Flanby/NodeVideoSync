@@ -16,6 +16,10 @@ exports.setDownloadDir = function(path) {
     }
 };
 
+exports.getDownloadDir = function() {
+    return downloadDir;
+};
+
 exports.upload = function(req, res, masterCallback) {
     var buffData = Buffer.from([]),
         meta = {__cnt: 0},

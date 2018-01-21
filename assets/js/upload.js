@@ -1,6 +1,8 @@
 $(function() {
     $('#upload').on('show.bs.modal', function (e) {
         $(".select-file .btn").removeClass("btn-success btn-primary btn-danger").addClass("btn-primary");
+        $(".select-file .btn").html("Browse...");
+        $("#upload form input[type=file]").val("");
     })
 
     $(".select-file").click(function() {
