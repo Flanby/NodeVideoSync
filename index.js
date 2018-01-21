@@ -239,7 +239,7 @@ io.on('connection', function (socket) {
 
     socket.on("videoClub", function() {
         fs.readdir(path.resolve(__dirname, videoFolder), function(err, items) {
-            socket.emit("videoClubList", {files: [].concat(items).filter(file => videoExt.indexOf(file.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()))});
+            socket.emit("videoClubList", {files: [].concat(items).filter(file => videoExt.indexOf(file.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()) != -1)});
         });
     });
 
