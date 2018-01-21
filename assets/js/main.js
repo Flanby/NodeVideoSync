@@ -1,5 +1,9 @@
 var video, socket, msgbox, pseudo;
 
+window.onresize = function() {
+    document.querySelector(".autoResize").onclick();
+};
+
 window.onload = function() {
     socket = io(document.location.origin);
     msgbox = document.getElementsByClassName("msgbox")[0];
@@ -249,13 +253,12 @@ window.onload = function() {
         return false;
     };
 
-    document.querySelector("input.w").value = window.innerWidth;
-    document.querySelector("form.size").onsubmit();
-
     document.querySelector(".autoResize").onclick = function() {
         document.querySelector("input.w").value = window.innerWidth;
         document.querySelector("form.size").onsubmit();
     };
+
+    document.querySelector(".autoResize").onclick();
 
     // Video Club
 
