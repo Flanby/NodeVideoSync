@@ -7,7 +7,7 @@ var https = require("https");
 var upload = require('./upload');
 
 // Put This in conf file
-var videoExt = ["avi", "ogg", "mp4", "webm"], // "mkv", 
+var videoExt = ["ogg", "mp4", "webm"], // "avi", "mkv", 
     videoFolder = "assets/video/",
     subFolder = "assets/sub/",
     rootPass = "Test";
