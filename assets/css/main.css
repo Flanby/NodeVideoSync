@@ -117,6 +117,11 @@ textarea {
     width: 50%;
 }
 
+.modal-body {
+    max-height: 80%;
+    overflow-y: auto;
+}
+
 #videoClub .modal-content, #videoClubYT .modal-content, #playlist .modal-content, #upload .modal-content {
     background: #202F37;
 }
