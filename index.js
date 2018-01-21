@@ -6,7 +6,7 @@ var router = require('./router');
 var https = require("https");
 var upload = require('./upload');
 
-var videoExt = ["avi", "mkv", "ogg", "mp4", "webm"],
+var videoExt = ["avi", "ogg", "mp4", "webm"], // "mkv", 
     videoFolder = "assets/video/",
     subFolder = "assets/sub/";
 
@@ -50,7 +50,19 @@ router.add("GET", "/upload", function(req, res) {
     });
 });
 
-router.add("POST", "/upload", upload.upload);
+upload.setDownloadDir(__dirname + "/assets/upload");
+router.add("POST", "/upload", function(req, res) {
+    upload.upload(req, res, function (rq, rs) {
+        if (typeof rq.body["upload-file"] != "undefined") {
+            res.writeHead(200);
+            res.end("Succesfully upload \""+rq.body["upload-file"]+"\"");
+        }
+        else {
+            res.writeHead(400);
+            res.end('Upload Fails');
+        }
+    });
+});
 
 router.add("GET", "/video/{video, type=path}", function(req, res) {
     if (videoExt.indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()) == -1) {

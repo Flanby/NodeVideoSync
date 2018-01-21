@@ -1,6 +1,22 @@
 var fs = require("fs");
 
-exports.upload = function(req, res) {
+var downloadDir = "./";
+
+exports.setDownloadDir = function(path) {
+    try {
+        var folder = fs.statSync(path);
+
+        if (folder.isDirectory() && (folder.mode & 0o2)) {
+            downloadDir = path + "/";
+            return true;
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+};
+
+exports.upload = function(req, res, masterCallback) {
     var buffData = Buffer.from([]),
         meta = {__cnt: 0},
         contentType = req.headers["content-type"].split(";"), 
@@ -8,7 +24,8 @@ exports.upload = function(req, res) {
         regexpInput = null,
         stream = null,
         lineEnding = null,
-        endReached = false;
+        endReached = false,
+        files = [];
 
     req.body = {};
     
@@ -33,60 +50,46 @@ exports.upload = function(req, res) {
     }
     boundary = "--" + boundary[1];
     
-    // Create File Steam
+    // Create/Write File Steam
     function createFileStream(filename, chunk = null, callback = null) {
         if (stream == null) {
-            stream = fs.createWriteStream(__dirname + "/assets/upload/" + filename);
+            stream = fs.createWriteStream(downloadDir + filename);
             stream.once('open', function(fd) {
-                // stream.addListener("drain", function() {
-                //     if (callback != null)
-                //         callback();
-                //     req.resume();
-                // });
-                stream.addListener("finish", function() {
-                    receiveData();
-                });
                 stream.addListener("error", function(err) {
+                    // Trow Error ?
                     console.debug("Got error while writing to file '" + filename + "': ", err);
                     res.writeHead(500, {'Content-Type': 'text/plain'});
                     res.end("Internal Error");
                     req.connection.destroy();
                 });
 
-                if (chunk != null)
-                    // wait the next chunk to check for croped boundary before adding it to the file
-                    stream.write(chunk, "binary", function() {
-                        if (callback != null)
-                            callback();
-                        req.resume();
-                    });
-                else {
-                    req.resume();
-                }
-            });
-        }
-        else {
-            if (chunk != null) {
                 stream.write(chunk, "binary", function() {
                     if (callback != null)
                         callback();
                     req.resume();
                 });
-            }
-            else {
+            });
+        }
+        else {
+            stream.write(chunk, "binary", function() {
+                if (callback != null)
+                    callback();
                 req.resume();
-            }
+            });
         }
     }
 
     // Receive Data Chunk
     function receiveData(chunk = Buffer.from([])) {
         var pos = -1;
-        console.log("Receive: ",chunk.length);
 
         var guardrail = 0;
         do {
-            if (guardrail++ == 20) return ; // Prevent infinite loop
+            if (guardrail++ == 20) { // Prevent infinite loop on bad request // Todo: replace this with error detection
+                req.abort();
+                res.writeHead(400);
+                return res.end();
+            } 
             pos = Buffer.concat([buffData, chunk], buffData.length + chunk.length).indexOf(boundary);
             // if the actual data is a file and boundary not found append buff to file
             if (pos == -1 && meta.__cnt == 2 && typeof meta.filename != "undefined") {
@@ -112,7 +115,7 @@ exports.upload = function(req, res) {
                 buffData = Buffer.from(buffData.slice(boundary.length));
                 if (typeof meta.name != "undefined") {
                     if (typeof meta.filename != "undefined") {
-                        req.body[meta.name] = meta.filename;
+                        files.push(req.body[meta.name] = meta.filename);
                         stream.end();
                         stream = null;
                     }
@@ -121,7 +124,7 @@ exports.upload = function(req, res) {
                 }
                 else if (meta.__cnt != 0)
                     console.log("Input not valid: ", meta);
-                console.log(meta);
+                
                 meta = {__cnt: 0};
                 continue;
             }
@@ -147,8 +150,10 @@ exports.upload = function(req, res) {
                     // if not empty line before then it's meta data
                     if (meta.__cnt <= 1) {
                         var line = (buffData.slice(0, linePos) + "").split(";");
-                        if (meta.__cnt == 0 && line[0].match(/\s*Content-Disposition: *form-data/i) == null)
-                            console.log("Not 'form-data' : "+line[0]);
+                        if (meta.__cnt == 0 && line[0].match(/\s*Content-Disposition: *form-data/i) == null && line[0] != "--") {
+                            req.pause();
+                            return onFail();
+                        }
                         for (var i = 1; i < line.length; i++) {
                             if ((line[i] = line[i].match(/^\s*([^=\s]+)="?([^"]+)"?\s*$/i)) == null)
                                 continue;
@@ -163,19 +168,13 @@ exports.upload = function(req, res) {
 
                         if (typeof meta.filename != "undefined") {
                             req.pause();
-                            
-                            // if boundary not found write nothing wait the next chunk
-                            if (pos == -1)
-                                createFileStream(meta.filename);
-                            // else chunck the data
-                            else {
-                                chunk = Buffer.from(buffData.slice(0, pos - lineEnding.length));
-                                buffData = Buffer.from(buffData.slice(pos));
 
-                                createFileStream(meta.filename, chunk, function() {
-                                    receiveData();
-                                });
-                            }
+                            chunk = Buffer.from(buffData.slice(0, pos - lineEnding.length));
+                            buffData = Buffer.from(buffData.slice(pos));
+
+                            createFileStream(meta.filename, chunk, function() {
+                                receiveData();
+                            });
                             return ;
                         }
                         else {
@@ -191,14 +190,53 @@ exports.upload = function(req, res) {
         } while (pos != -1);
 
         if (endReached) {
-            if (buffData.length == 0 && chunk.length == 0) {
-                console.log("Ends on:", req.body);
+            if (buffData.length == 0 && chunk.length == 0)
+                onDone(); // Ok
+            else {
+                onFail();
             }
         }
     }
 
+    // Remove all receve Data and File
+    function onFail() {
+        if (stream != null)
+            stream.end("", "binary", function() {
+                stream = null;
+                onFail();
+            });
+        else {
+            for (var i = 0; i < files.length; i++)
+                fs.unlink(downloadDir + files[i], () => {});
+            if (typeof meta.filename != "undefined")
+                fs.unlink(downloadDir + meta.filename, () => {});
+            req.body = {};
+            masterCallback(req, res);
+        }
+    }
+
+    // Add parameter to keep or delete receive file at the end ?
+    function onDone() {
+        masterCallback(req, res);
+    }
+
     req.on('data', receiveData);
+
     req.on('end', function() {
         endReached = true;
+        if (buffData.length == 0)
+            onDone();
     });
+    
+    req.on('abort', function() {
+        if (!endReached)
+            onFail();
+    });
+    
+    req.on('close', function() {
+        if (!endReached)
+            onFail();
+    });
+
+    
 };
