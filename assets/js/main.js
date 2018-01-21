@@ -6,19 +6,68 @@ window.onload = function() {
     pseudo = "";
     video = videojs(document.querySelector('.video-js'));
 
+    // Chat Commands
+    var cmds = {
+        "/help": {func: displayHelp, params: [], description: "Display this help"},
+        "/name": {path: "login", params: ["pseudo"], description: "Change pseudo"},
+        "/getUploadTocken": {path: "getUploadTocken", params: ["pass"], description: "Get the upload token"}
+    }
+
+    function displayHelp() {
+        var help = "<b>System:</b> Help:<br>";
+
+        for (var cmd in cmds) {
+            help += " - "+cmd+" ";
+
+            for (var i = 0; i < cmds[cmd].params.length; i++)
+                help += "[" + cmds[cmd].params[i] + "] ";
+
+            help += ": " + cmds[cmd].description+"<br>"
+        }
+
+        addMsg(help.substring(0, help.length - 4), 1);
+    }
+
+    // Chat Input
     document.getElementsByClassName("inputChat")[0].onkeypress = function(evt) {
         if (!evt.shiftKey && evt.key == "Enter") {
             if (this.value.length == 0)
                 return false;
-            var msg = this.value.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
-            socket.emit('chatMsg', { "msg": msg });
-            this.value = "";
-            addMsg("<b>"+pseudo+":</b> "+msg);
+
+            if (this.value.match(/^\/[a-z\-_0-9]+/i)) {
+                var parser = this.value.replace(/ +/g, " ").replace(/ +$/, "").split(" ");
+
+                if (typeof cmds[parser[0]] != "undefined") {
+                    if (cmds[parser[0]].params.length + 1 == parser.length) {
+                        this.value = "";
+                        var data = {}
+
+                        for (var i = 0; i < cmds[parser[0]].params.length; i++)
+                            data[cmds[parser[0]].params[i]] = parser[i + 1];
+
+                        if (typeof cmds[parser[0]].func != "undefined")
+                            cmds[parser[0]].func(data);
+                        else
+                            socket.emit(cmds[parser[0]].path, data);
+                    }
+                    else
+                        addMsg("<b>System:</b> Invalid argument", 1);
+                }
+                else
+                    addMsg("<b>System:</b> Invalid command, try /help", 1);
+            }
+            else {
+                var msg = this.value.replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, '$1<br>$2');
+                socket.emit('chatMsg', { "msg": msg });
+                this.value = "";
+                addMsg("<b>"+pseudo+":</b> "+msg);
+            }
             return false
         }
         return true;
     }
     
+    // Chat Display (0 = white, 1 = pink, 2 = blue, 3 = green)
     function addMsg(msg, isInfo = 0) {
         var div = document.createElement('div');
 
@@ -40,6 +89,7 @@ window.onload = function() {
             msgbox.scrollTop = msgbox.scrollHeight - msgbox.offsetHeight;
     }
 
+    // Generate Random strings
     function randName(length = 8) {
         var str = "";
         for (var i = 0; i < length; i++)
@@ -89,7 +139,7 @@ window.onload = function() {
     });
     
     socket.on('chatMsg', function (data) {
-        addMsg(data.msg);
+        addMsg(data.msg, (typeof data.color == "undefined" ? 0 : data.color));
     });
 
     socket.on("userslist", function(data) {
@@ -116,10 +166,6 @@ window.onload = function() {
             list.appendChild(li);
         }
     });
-
-    // video.ready(function() {
-    //     socket.emit('ready');
-    // });
 
     // Video
 
@@ -196,6 +242,7 @@ window.onload = function() {
     });
 
     // Option 
+
     document.querySelector("form.size").onsubmit = function() {
         video.width(this.querySelector("input.w").value);
         video.height(this.querySelector("input.h").value);

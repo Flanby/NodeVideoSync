@@ -6,9 +6,11 @@ var router = require('./router');
 var https = require("https");
 var upload = require('./upload');
 
+// Put This in conf file
 var videoExt = ["avi", "ogg", "mp4", "webm"], // "mkv", 
     videoFolder = "assets/video/",
-    subFolder = "assets/sub/";
+    subFolder = "assets/sub/",
+    rootPass = "Test";
 
 app.listen(3000);
 
@@ -146,7 +148,30 @@ var currentVideo = {
     sub: ""
 };
 
+var uploadToken = null;
+
 io.on('connection', function (socket) {
+    // upload
+    socket.on("getUploadTocken", function (data) {
+        if (typeof data.pass == "undefined") {
+            return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
+        }
+        
+        function randStr(length) {
+            var str = "";
+            for (var i = 0; i < length; i++)
+                str += Math.floor(Math.random() * 256).toString(16);
+            return Buffer.from(str).toString('base64').substr(0, length);
+        }
+
+        if (data.pass == rootPass) {
+            uploadToken = randStr(16);
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> new tocken is <b>" + uploadToken + "</b>", color: 1});
+        }
+        else 
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
+    });
+
     // user/chat
     socket.on('login', function (data) {
         if (typeof data.pseudo == "undefined" || data.pseudo == null || data.pseudo.length > 60) {
