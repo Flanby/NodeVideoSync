@@ -113,6 +113,9 @@ window.onload = function() {
     
     socket.on('changeName', function (data) {
         addMsg("<b>"+data.old+"</b> is now known as <b>"+data.new+"</b>", 1);
+        
+        if (pseudo == data.old)
+            data.new;
 
         var list = document.querySelector(".usersList");
         for (var i = 0; list.childElementCount > i; i++)
