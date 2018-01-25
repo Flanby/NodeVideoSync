@@ -6,6 +6,8 @@
     <script src="//vjs.zencdn.net/5.19/video.min.js" crossorigin="anonymous"></script>
     <script src="/public/js/Youtube.min.js" crossorigin="anonymous"></script>
 
+    <script src="/public/js/playlistOverlay.js"></script>
+
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -14,9 +16,25 @@
     <script src="/public/js/main.js"></script>
     <script src="/public/js/upload.js"></script>
     <link href="/public/css/main.css" rel="stylesheet">
+    <link href="/public/css/playlistOverlay.css" rel="stylesheet">
+
+    <script src="https://use.fontawesome.com/97870eed5c.js"></script>
   </head>
   <body>
     <video controls class="video-js" data-setup='{"techOrder": ["html5", "youtube"], "controls": true, "autoplay": false, "preload": "auto"}'></video>
+    <div class="playlistSide" style="width: 0">
+      <h2><i class="fa fa-arrow-right" aria-hidden="true"></i>Playlist</h2>
+      <!-- <div class="btn-group" role="group">
+        <button class="btn btn-primary changeVideo">Change Video</button>
+        <button class="btn btn-danger changeVideoYT" data-toggle="modal" data-target="#videoClubYT">YouTube Video</button>
+        <button class="btn btn-secondary playP">Prev</button>
+        <button class="btn btn-secondary playN">Next</button>
+      </div> -->
+
+      <div class="playVid current" data-id="1"><img src="/public/img/vid.png" alt="ico">Anime<button type="button" class="close" data-id="1">&times;</button></div>
+      <div class="playVid" data-id="2"><img src="/public/img/vid.png" alt="ico">Going.in.Style<button type="button" class="close" data-id="2">&times;</button></div>
+
+    </div>
 
     <div class="flexBoxCont">
       <div class="ulistBloc">
@@ -38,7 +56,7 @@
         <!-- data-toggle="modal" data-target="#videoClub" -->
         <button class="btn btn-primary changeVideo">Change Video</button><br>
         <button class="btn btn-danger changeVideoYT" data-toggle="modal" data-target="#videoClubYT">YouTube Video</button><br>
-        <div class="btn-group" role="group" aria-label="Basic example">
+        <div class="btn-group" role="group">
           <button class="btn btn-secondary playP">Prev</button>
           <button class="btn btn-secondary playN">Next</button>
         </div><br>

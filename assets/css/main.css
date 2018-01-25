@@ -130,7 +130,7 @@ textarea {
     padding: 0;
 }
 
-#videoClub .choice, #playlist .playVid {
+#videoClub .choice, #playlist .playVid, .playlistSide .playVid {
     padding: 10px 20px;
     vertical-align: middle;
     background: #2A3941;
@@ -139,26 +139,26 @@ textarea {
     text-overflow: ellipsis;
 }
 
-#videoClub .choice:hover, #playlist .current {
+#videoClub .choice:hover, #playlist .current, .playlistSide .current {
     font-weight: bold;
     color: #9DFF00;
 }
 
-#videoClub .choice:nth-child(even), #playlist .playVid:nth-child(even) {
+#videoClub .choice:nth-child(even), #playlist .playVid:nth-child(even), .playlistSide .playVid:nth-child(even) {
     background: rgb(50, 64, 71);
 }
 
-#playlist .playVid img {
+#playlist .playVid img, .playlistSide img {
     max-height: 25px;
     max-width: 25px;
     margin-right: 10px;
 }
 
-#playlist .modal-body div {
+#playlist .modal-body div, .playlistSide .playVid {
     position: relative;
 }
 
-#playlist .modal-body .close {
+#playlist .modal-body .close, .playlistSide .playVid .close {
     position: absolute;
     top: 0;
     right: 15px;
@@ -183,12 +183,12 @@ textarea {
     width: 100%;
 }
 
-.modal-content .close {
+.modal-content .close, .playlistSide .playVid .close {
     color: #e4e3d1;
     text-shadow: none;
 }
 
-.modal-content .close:hover {
+.modal-content .close:hover, .playlistSide .playVid .close:hover {
     color: #2FBCEB;
 }
 
@@ -203,4 +203,28 @@ textarea {
 .vjs-text-track-display div div div {
     background-color: transparent !important;
     text-shadow: #000000 0px 0px 10px, #000000 0px 0px 10px, #000000 0px 0px 10px, #000000 0px 0px 10px;
+}
+
+
+/* Playlist */
+
+.playlistSide {
+    width: 450px;
+    background-color: #202F37;
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 720px;
+    /* box-shadow: -10px 0 10px #202F37; */
+    overflow-x: hidden;
+    transition: 0.5s;
+}
+
+.playlistSide h2 {
+    padding: 10px 20px;
+}
+
+.playlistSide h2 i {
+    margin-right: 15px;
+    cursor: pointer;
 }

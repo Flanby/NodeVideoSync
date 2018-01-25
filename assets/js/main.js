@@ -9,6 +9,7 @@ window.onload = function() {
     msgbox = document.getElementsByClassName("msgbox")[0];
     pseudo = "";
     video = videojs(document.querySelector('.video-js'));
+    video.SidePlaylist();
 
     // Chat Commands
     var cmds = {
@@ -309,6 +310,9 @@ window.onload = function() {
     }
 
     socket.on("playlist", function(data) {
+        
+        video.SidePlaylist.setPlaylist(data);
+
         var box = document.querySelector("#playlist .modal-body");
         box.innerHTML = "";
 
