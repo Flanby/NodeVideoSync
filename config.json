@@ -1,0 +1,6 @@
+{
+    "videoExt": ["ogg", "mp4", "webm"],
+    "videoFolder": "assets/video/",
+    "subFolder": "assets/sub/",
+    "rootPass": "Test"
+}
