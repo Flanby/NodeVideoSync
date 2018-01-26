@@ -11,6 +11,9 @@ config.load(__dirname + '/config.json');
 
 app.listen(3000);
 
+upload.createVideoThumbnail("Anime.mp4");
+
+// Front page
 router.add("GET", "/", function (req, res) {
     fs.readFile(__dirname + '/index.html',
     function (err, data) {
@@ -24,6 +27,7 @@ router.add("GET", "/", function (req, res) {
     });
 });
 
+// Expose all ressources 
 router.add("GET", "/public/{file, type=path}", function(req, res) {
     fs.readFile(__dirname + '/assets/' + req.urlParams.file, function (err, data) {
         if (err) {
@@ -36,7 +40,7 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
     });
 });
 
-upload.setDownloadDir(__dirname + "/assets/upload");
+// Upload file
 router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
     if (req.urlParams.token != uploadToken) {
         req.pause();
@@ -48,11 +52,16 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
     uploadToken = null;
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
-            res.writeHead(200);
-            res.end("Succesfully upload \""+rq.body["upload-file"]+"\"");
             fs.rename(path.resolve(upload.getDownloadDir(), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) { 
-                if (err)
-                    console.log(err); 
+                if (err) {
+                    console.log(err);
+                    res.writeHead(500);
+                    res.end("Succesfully upload \""+rq.body["upload-file"]+"\", but fail server");
+                    return ;
+                }
+
+                res.writeHead(200);
+                res.end("Succesfully upload \""+rq.body["upload-file"]+"\"");
             });
         }
         else {
@@ -62,6 +71,7 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
     });
 });
 
+// Expose video
 router.add("GET", "/video/{video, type=path}", function(req, res) {
 if (config.get("videoExt").indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()) == -1) {
         res.writeHead(404);
@@ -106,6 +116,7 @@ if (config.get("videoExt").indexOf(req.urlParams.video.replace(/^.*\.([^.]*)$/gi
         });
 });
 
+// Expose subtitle
 router.add("GET", "/sub/{sub, type=path}", function(req, res) {
     fs.readFile(__dirname + "/" + config.get("subFolder") + req.urlParams.sub, function (err, data) {
         if (err || req.urlParams.sub.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase() != "vtt") {

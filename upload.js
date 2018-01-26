@@ -1,24 +1,33 @@
 var fs = require("fs");
+var child = require("child_process");
+var config = require("./config");
+var path = require("path");
 
-var downloadDir = "./";
-
-exports.setDownloadDir = function(path) {
+exports.getMovieDuration = getMovieDuration;
+function getMovieDuration(file) {
     try {
-        var folder = fs.statSync(path);
-
-        if (folder.isDirectory() && (folder.mode & 0o2)) {
-            downloadDir = path + "/";
-            return true;
-        }
-        return false;
+        return child.execSync(config.get("pathToffprobe") + " -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 '" + path.resolve(__dirname, config.get("videoFolder"), file) + "'");
     } catch (e) {
+        //console.log("Duration:", e.output[2].toString());
+        return null;
+    }
+}
+
+exports.createVideoThumbnail = function (file) {
+    var duration = getMovieDuration(file);
+    if (duration == null)
+        return false;
+
+    try {
+        child.execSync(config.get("pathToffmpeg") + " -i '" + path.resolve(__dirname, config.get("videoFolder"), file) + "' -ss " +
+                       Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + (duration * 1000 % 1000).toString().padStart(3, '0') +
+                       " -vframes 1 '" + path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'jpg')) + "'");
+    } catch (e) {
+        console.log("Thumbnail:", e);
         return false;
     }
-};
-
-exports.getDownloadDir = function() {
-    return downloadDir;
-};
+    return true;
+}
 
 exports.upload = function(req, res, masterCallback) {
     var buffData = Buffer.from([]),
@@ -57,7 +66,7 @@ exports.upload = function(req, res, masterCallback) {
     // Create/Write File Steam
     function createFileStream(filename, chunk = null, callback = null) {
         if (stream == null) {
-            stream = fs.createWriteStream(downloadDir + filename);
+            stream = fs.createWriteStream(path.resolve(__dirname, config.get("downloadFolder"), filename));
             stream.once('open', function(fd) {
                 stream.addListener("error", function(err) {
                     // Trow Error ?
@@ -211,9 +220,9 @@ exports.upload = function(req, res, masterCallback) {
             });
         else {
             for (var i = 0; i < files.length; i++)
-                fs.unlink(downloadDir + files[i], () => {});
+                fs.unlink(path.resolve(__dirname, config.get("downloadFolder"), files[i]), () => {});
             if (typeof meta.filename != "undefined")
-                fs.unlink(downloadDir + meta.filename, () => {});
+                fs.unlink(path.resolve(__dirname, config.get("downloadFolder"), meta.filename), () => {});
             req.body = {};
             masterCallback(req, res);
         }
