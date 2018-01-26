@@ -14,17 +14,43 @@ function getMovieDuration(file) {
 }
 
 exports.createVideoThumbnail = function (file) {
-    var duration = getMovieDuration(file);
-    if (duration == null)
-        return false;
+    var videoPath = path.resolve(__dirname, config.get("videoFolder"), file),
+        thumbPath = path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'png'));
 
     try {
-        child.execSync(config.get("pathToffmpeg") + " -i '" + path.resolve(__dirname, config.get("videoFolder"), file) + "' -ss " +
-                       Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + (duration * 1000 % 1000).toString().padStart(3, '0') +
-                       " -vframes 1 '" + path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'jpg')) + "'");
-    } catch (e) {
-        console.log("Thumbnail:", e);
+        fs.accessSync(thumbPath, fs.constants.R_OK);
         return false;
+    } catch (err) {
+        try {
+
+            var width, height, ratio, duration, thumbnail = {maxWidth: 320, maxHeight: 240};
+
+            [width, height, duration] = child.execSync(config.get("pathToffprobe") + " -v error -select_streams v:0 -show_entries stream=duration,height,width -of default=noprint_wrappers=1:nokey=1 '" + videoPath + "'").toString().split("\n");
+
+            // take the frame at 10% of the video
+            duration /= 10;
+
+            // foud the thumbnail size (keep the video ratio)
+            thumbnail.ratio = thumbnail.maxWidth / thumbnail.maxHeight;
+            ratio = width / height;
+
+            if (thumbnail.ratio > ratio) {
+                height = thumbnail.maxHeight;
+                width = height * ratio;
+            }
+            else {
+                width = thumbnail.maxWidth;
+                height = width * (1/ratio);
+            }
+            
+            child.execSync(config.get("pathToffmpeg") + " -loglevel error -i '" + videoPath + "' -ss " +
+                        Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + (duration * 1000 % 1000).toString().padStart(3, '0') +
+                        " -s " + width + "x" + height +
+                        " -vframes 1 '" + thumbPath + "'");
+        } catch (e) {
+            console.log("Thumbnail:", e);
+            return false;
+        }
     }
     return true;
 }
