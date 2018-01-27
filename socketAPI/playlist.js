@@ -21,6 +21,8 @@ exports.add = function(data) {
     if (u == null)
         return ;
     video.prepareVideo(data.src, u.name, function(vid) {
+        if (vid == null)
+            return;
         vid.id = idUnique++;
         playlist.push(vid);
 

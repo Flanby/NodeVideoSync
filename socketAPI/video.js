@@ -54,39 +54,63 @@ exports.listMoviesFile = function() {
 
 exports.prepareVideo = prepareVideo;
 function prepareVideo(src, username, func) {
-    var vid = {user: username, src: src, sub: ""};
+    var vid = {user: username, src: src, sub: "", thumb: ""};
 
     if (vid.src.type == 'video/youtube') {
-        https.get(vid.src.src, function(resp) {
-            let data = '';
-            
-            // A chunk of data has been recieved.
-            resp.on('data', (chunk) => {
-                if (data == -1)
-                    return;
-                data = (chunk+'').match(/<title>(.*) - YouTube<\/title>/gm);
-                if (data != null) {
-                    vid.name = (""+data).replace(/<title>(.*) - YouTube<\/title>/g, '$1');
-                    func(vid);
-                    data = -1;
-                }
+        var key = config.get("googleAPIKey");
+
+        if (typeof key != "string" || key.length > 0) {
+            vid.name = vid.src.src;
+            return func(vid);
+        }
+
+        var id = vid.src.src.match(/(youtu.be\/|youtube.com\/(watch?(.*)?v=|(embed|v)\/))([^?&"'>]+)/);
+
+        if (id == null || typeof id[5] == 'undefined' || id[5].length != 11)
+            return func(null);
+
+        https.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id="+id[5]+"&key="+config.get("googleAPIKey"), function(resp) {
+            let data = "";
+
+            resp.on("data", (chunk) => data += chunk);
+            resp.on("end", function() {
+                data = JSON.parse(data);
+
+                vid.name = data.items[0].snippet.title;
+                vid.thumb = data.items[0].snippet.thumbnails.medium;
+
+                func(vid);
             });
+            
         }).on("error", (err) => {
             vid.name = "none";
             func(vid);
         });
     }
     else {
-        vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
         try {
-            fs.accessSync(__dirname + "/" + subFolder + vid.name + '.vtt', fs.constants.R_OK);
-            vid.sub = vid.name + '.vtt';
-        } catch (err) {
-            vid.sub = "";
+            fs.accessSync(path.resolve("..", config.get("videoFolder"), vid.src.src.substring(7)), fs.constants.R_OK);
+            vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
+
+            try {
+                fs.accessSync(path.resolve("..", config.get("subFolder"), vid.name + '.vtt'), fs.constants.R_OK);
+                vid.sub = vid.name + '.vtt';
+            } catch (err) {
+                vid.sub = "";
+            }
+
+            try {
+                fs.accessSync(path.resolve("..", config.get("thumbFolder"), vid.name + '.png'), fs.constants.R_OK);
+                vid.thumb = vid.name + '.png';
+            } catch (err) {
+                vid.thumb = "";
+            }
+        } catch (e) {
+            vid = null;
         }
+
         func(vid);
     }
-    return vid;
 }
 
 exports.changeVideo = changeVideo;
