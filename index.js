@@ -3,7 +3,6 @@ var io = require('socket.io')(app);
 var fs = require('fs');
 var path = require("path");
 var router = require('./router');
-var https = require("https");
 var upload = require('./upload');
 
 var config = require("./config");
