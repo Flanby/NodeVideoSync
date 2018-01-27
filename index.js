@@ -11,8 +11,6 @@ config.load(__dirname + '/config.json');
 
 app.listen(3000);
 
-upload.createVideoThumbnail("Anime.mp4");
-
 // Front page
 router.add("GET", "/", function (req, res) {
     fs.readFile(__dirname + '/index.html',
@@ -21,13 +19,13 @@ router.add("GET", "/", function (req, res) {
         res.writeHead(500);
         return res.end('Error loading index.html');
       }
-  
+
       res.writeHead(200);
       res.end(data);
     });
 });
 
-// Expose all ressources 
+// Expose all ressources
 router.add("GET", "/public/{file, type=path}", function(req, res) {
     fs.readFile(__dirname + '/assets/' + req.urlParams.file, function (err, data) {
         if (err) {
@@ -52,7 +50,7 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
     uploadToken = null;
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
-            fs.rename(path.resolve(upload.getDownloadDir(), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) { 
+            fs.rename(path.resolve(upload.getDownloadDir(), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) {
                 if (err) {
                     console.log(err);
                     res.writeHead(500);
@@ -152,7 +150,7 @@ io.on('connection', function (socket) {
         if (typeof data.pass == "undefined") {
             return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
         }
-        
+
         function randStr(length) {
             var str = "";
             for (var i = 0; i < length; i++)
@@ -164,7 +162,7 @@ io.on('connection', function (socket) {
             uploadToken = randStr(16);
             socket.emit("chatMsg", {msg: "<b>Sever:</b> new token is <b>" + uploadToken + "</b>", color: 1});
         }
-        else 
+        else
             socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
     });
 

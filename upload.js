@@ -14,8 +14,8 @@ function getMovieDuration(file) {
 }
 
 exports.createVideoThumbnail = function (file) {
-    var videoPath = path.resolve(__dirname, config.get("videoFolder"), file),
-        thumbPath = path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'png'));
+    var videoPath = path.resolve(__dirname, config.get("videoFolder"), file).toString().replace("'", "\\'"),
+        thumbPath = path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'png')).toString().replace("'", "\\'");
 
     try {
         fs.accessSync(thumbPath, fs.constants.R_OK);
@@ -36,15 +36,15 @@ exports.createVideoThumbnail = function (file) {
 
             if (thumbnail.ratio > ratio) {
                 height = thumbnail.maxHeight;
-                width = height * ratio;
+                width = Math.round(height * ratio);
             }
             else {
                 width = thumbnail.maxWidth;
-                height = width * (1/ratio);
+                height = Math.round(width * (1/ratio));
             }
-            
+
             child.execSync(config.get("pathToffmpeg") + " -loglevel error -i '" + videoPath + "' -ss " +
-                        Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + (duration * 1000 % 1000).toString().padStart(3, '0') +
+                        Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + Math.floor(duration * 1000 % 1000).toString().padStart(3, '0') +
                         " -s " + width + "x" + height +
                         " -vframes 1 '" + thumbPath + "'");
         } catch (e) {
@@ -58,7 +58,7 @@ exports.createVideoThumbnail = function (file) {
 exports.upload = function(req, res, masterCallback) {
     var buffData = Buffer.from([]),
         meta = {__cnt: 0},
-        contentType = req.headers["content-type"].split(";"), 
+        contentType = req.headers["content-type"].split(";"),
         boundary = null,
         regexpInput = null,
         stream = null,
@@ -67,7 +67,7 @@ exports.upload = function(req, res, masterCallback) {
         files = [];
 
     req.body = {};
-    
+
     // Check content-type header
     if (contentType[0] != "multipart/form-data") {
         res.writeHead(400, {'Content-Type': 'text/plain'});

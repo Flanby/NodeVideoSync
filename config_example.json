@@ -5,6 +5,6 @@
     "downloadFolder": "assets/upload",
     "thumbFolder": "assets/img/thumb",
     "rootPass": "Test",
-    "pathToffmpeg": "G:/Programs/FFmpeg/ffmpeg.exe",
-    "pathToffprobe": "G:/Programs/FFmpeg/ffprobe.exe"
+    "pathToffmpeg": "ffmpeg",
+    "pathToffprobe": "ffprobe"
 }
