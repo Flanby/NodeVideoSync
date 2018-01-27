@@ -4,5 +4,6 @@ package-lock.json
 
 assets/video/*
 assets/sub/*
+assets/img/thumb/*
 
 config.json

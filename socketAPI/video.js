@@ -59,7 +59,7 @@ function prepareVideo(src, username, func) {
     if (vid.src.type == 'video/youtube') {
         var key = config.get("googleAPIKey");
 
-        if (typeof key != "string" || key.length > 0) {
+        if (typeof key != "string" || key.length < 0) {
             vid.name = vid.src.src;
             return func(vid);
         }
@@ -77,35 +77,38 @@ function prepareVideo(src, username, func) {
                 data = JSON.parse(data);
 
                 vid.name = data.items[0].snippet.title;
-                vid.thumb = data.items[0].snippet.thumbnails.medium;
+                vid.thumb = data.items[0].snippet.thumbnails.medium.url;
 
                 func(vid);
             });
             
         }).on("error", (err) => {
+            console.log("error");
             vid.name = "none";
             func(vid);
         });
     }
     else {
         try {
-            fs.accessSync(path.resolve("..", config.get("videoFolder"), vid.src.src.substring(7)), fs.constants.R_OK);
+            fs.accessSync(path.resolve(config.get("videoFolder"), vid.src.src.substring(7)), fs.constants.R_OK);
             vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
 
             try {
-                fs.accessSync(path.resolve("..", config.get("subFolder"), vid.name + '.vtt'), fs.constants.R_OK);
+                fs.accessSync(path.resolve(config.get("subFolder"), vid.name + '.vtt'), fs.constants.R_OK);
                 vid.sub = vid.name + '.vtt';
             } catch (err) {
                 vid.sub = "";
             }
 
             try {
-                fs.accessSync(path.resolve("..", config.get("thumbFolder"), vid.name + '.png'), fs.constants.R_OK);
+                fs.accessSync(path.resolve(config.get("thumbFolder"), vid.name + '.png'), fs.constants.R_OK);
                 vid.thumb = vid.name + '.png';
             } catch (err) {
                 vid.thumb = "";
             }
         } catch (e) {
+            console.log("Here;", vid.src.src.substring(7));
+            console.log(e);
             vid = null;
         }
 

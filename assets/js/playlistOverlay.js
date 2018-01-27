@@ -70,20 +70,27 @@ class SidePlaylistItem extends ClickableComponent {
             textContaineur = dom.createEl("div", {className: "text-containeur"});
         el.dataset.id =  this.options_.id;
 
-        el.appendChild(dom.createEl("button", {innerHTML: "&times;", className: "close", onclick: function(event) {
-            event.stopPropagation();
-            socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
-            this.parentElement.parentElement.removeChild(this.parentElement);
-        }}, {type: "button"}));
 
-        el.appendChild(dom.createEl("img", {}, {src: "/public/img/vid.png", alt: "thumbnail"}));
+        var thumb = "/public/img/vid.png";
+        if (this.options_.thumb.match(/^(\/\/|https?:\/\/)/i) != null)
+            thumb = this.options_.thumb;
+        else if (this.options_.thumb.length > 0)
+            thumb = "/public/img/thumb/" + this.options_.thumb;
+        var thumHolder = dom.createEl("div", {className: "thumb-containeur"});
+        thumHolder.appendChild(dom.createEl("img", {}, {src: thumb, alt: "thumbnail"}));
 
 
         textContaineur.appendChild(dom.createEl("span", {innerText: this.options_.name, className: "title"}));
         textContaineur.appendChild(dom.createEl("br"));
         textContaineur.appendChild(dom.createEl("span", {innerText: this.options_.user, className: "contributor"}));
 
+        el.appendChild(thumHolder);
         el.appendChild(textContaineur);
+        el.appendChild(dom.createEl("button", {innerHTML: "&times;", className: "close", onclick: function(event) {
+            event.stopPropagation();
+            socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
+            this.parentElement.parentElement.removeChild(this.parentElement);
+        }}, {type: "button"}));
 
         return el;
     }
