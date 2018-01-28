@@ -68,8 +68,7 @@
     align-items: flex-start;
 }
 
-.vjs-side-playlist-item .current {
-    font-weight: bold;
+.vjs-side-playlist-item.current .title{
     color: #9DFF00;
 }
 
@@ -94,11 +93,22 @@
     background: black;
     display: flex;
     justify-content: center;
+    position: relative;
 }
 
 .vjs-side-playlist-item .thumb-containeur img {
     max-height: 100%;
     max-width: 100%;
+}
+
+.vjs-side-playlist-item .thumb-containeur .time{
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 2px;
+    border-radius: 2px;
+    font-size: 12px;
 }
 
 .vjs-side-playlist-item .text-containeur {

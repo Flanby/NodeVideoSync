@@ -3,6 +3,7 @@ var path = require("path");
 var https = require("https");
 var users = require("./user");
 var config = require("../config");
+var upload = require("../upload");
 
 var io = config.get('SocketIOServ');
 
@@ -52,9 +53,46 @@ exports.listMoviesFile = function() {
     });
 };
 
+function ytDurationConverter(time = "") {
+    var str = "", tmp = time.toUpperCase().match(/\d+\w/g), valOrder = "DHMS", offset = -1;
+
+    for (var i = 0; i < tmp.length; i++) {
+        var indic = tmp[i][tmp[i].length - 1];
+        indic = valOrder.indexOf(indic);
+
+        if (indic == -1)
+            return "";
+        
+        if (offset == -1)
+            offset = indic;
+
+        for (var j = offset + 1; j < indic; j++)
+            str += ":00";
+        offset = indic;
+
+        str += ':' + parseInt(tmp[i]).toString().padStart(2, '0');
+    }
+    return str.substr(1);
+}
+
+function fileDurationConverter(time = "") {
+    if (time == null || time == "")
+        return "";
+    time = parseInt(time);
+
+    var str = "";
+    while (time > 0) {
+        var data = time % 60;
+        str = ':' + data.toString().padStart(2, '0') + str;
+        time = (time - data) / 60;
+    }
+
+    return str.substr(1);
+}
+
 exports.prepareVideo = prepareVideo;
 function prepareVideo(src, username, func) {
-    var vid = {user: username, src: src, sub: "", thumb: ""};
+    var vid = {user: username, src: src, sub: "", thumb: "", duration: ""};
 
     if (vid.src.type == 'video/youtube') {
         var key = config.get("googleAPIKey");
@@ -69,7 +107,7 @@ function prepareVideo(src, username, func) {
         if (id == null || typeof id[5] == 'undefined' || id[5].length != 11)
             return func(null);
 
-        https.get("https://www.googleapis.com/youtube/v3/videos?part=snippet&id="+id[5]+"&key="+config.get("googleAPIKey"), function(resp) {
+        https.get("https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet&id="+id[5]+"&key="+config.get("googleAPIKey"), function(resp) {
             let data = "";
 
             resp.on("data", (chunk) => data += chunk);
@@ -78,12 +116,12 @@ function prepareVideo(src, username, func) {
 
                 vid.name = data.items[0].snippet.title;
                 vid.thumb = data.items[0].snippet.thumbnails.medium.url;
+                vid.duration = ytDurationConverter(data.items[0].contentDetails.duration);
 
                 func(vid);
             });
             
         }).on("error", (err) => {
-            console.log("error");
             vid.name = "none";
             func(vid);
         });
@@ -106,9 +144,9 @@ function prepareVideo(src, username, func) {
             } catch (err) {
                 vid.thumb = "";
             }
+
+            vid.duration = fileDurationConverter(upload.getMovieDuration(vid.src.src.substring(7)));
         } catch (e) {
-            console.log("Here;", vid.src.src.substring(7));
-            console.log(e);
             vid = null;
         }
 

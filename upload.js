@@ -14,8 +14,8 @@ function getMovieDuration(file) {
 }
 
 exports.createVideoThumbnail = function (file) {
-    var videoPath = path.resolve(__dirname, config.get("videoFolder"), file).toString().replace("'", "\\'"),
-        thumbPath = path.resolve(__dirname, config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'png')).toString().replace("'", "\\'");
+    var videoPath = path.resolve(config.get("videoFolder"), file).toString().replace("'", "\\'"),
+        thumbPath = path.resolve(config.get("thumbFolder"), file.replace(new RegExp("(" + config.get("videoExt").join("|") + ")$", 'i'), 'png')).toString().replace("'", "\\'");
 
     try {
         fs.accessSync(thumbPath, fs.constants.R_OK);

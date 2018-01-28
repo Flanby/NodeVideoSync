@@ -7,6 +7,13 @@ class SidePlaylist extends Component {
     constructor(player, options) {
         super(player, options);
         this.items = [];
+        this.currentItem = -1;
+    }
+
+    setCurrentVideo(nc) {
+        if (this.currentItem != -1)
+            this.items[this.currentItem].el().classList.remove("current");
+        this.items[this.currentItem = nc].el().classList.add("current");
     }
 
     createEl() {
@@ -58,7 +65,6 @@ class SidePlaylistItem extends ClickableComponent {
         this.id = options.id;
         this.name = options.name;
         this.user = options.user;
-        console.log(this);
     }
 
     buildCSSClass() {
@@ -78,6 +84,9 @@ class SidePlaylistItem extends ClickableComponent {
             thumb = "/public/img/thumb/" + this.options_.thumb;
         var thumHolder = dom.createEl("div", {className: "thumb-containeur"});
         thumHolder.appendChild(dom.createEl("img", {}, {src: thumb, alt: "thumbnail"}));
+        console.log(this.options_.duration);
+        if (this.options_.duration != "")
+            thumHolder.appendChild(dom.createEl("span", {className: "time", innerText: this.options_.duration}))
 
 
         textContaineur.appendChild(dom.createEl("span", {innerText: this.options_.name, className: "title"}));
@@ -120,6 +129,7 @@ class SidePlaylistButton extends Button {
     }
 
     handleClick(e) {
+        socket.emit("getPlaylist");
         document.querySelector(".vjs-side-playlist-overlay").style.width = "450px";
     }
 }
@@ -132,7 +142,6 @@ Component.registerComponent('SidePlaylistButton', SidePlaylistButton);
 var plugin = function(options) {
     this.addChild('SidePlaylistButton', {});
     this.playlistUI = this.addChild('SidePlaylist', {});
-    console.log(this);
 };
 
 plugin.setPlaylist = function(data) {
@@ -140,6 +149,8 @@ plugin.setPlaylist = function(data) {
 
     for (var i = 0; i < data.playlist.length; i++)
         video.playlistUI.addItem(new SidePlaylistItem(this, data.playlist[i]));
+
+    video.playlistUI.setCurrentVideo(data.offset);
 }
   
 plugin.VERSION = '0.0.1';
