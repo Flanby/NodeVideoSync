@@ -46,6 +46,9 @@
 
 .vjs-side-playlist-content {
     width: 450px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .vjs-side-playlist-content h2 {
@@ -55,6 +58,10 @@
 .vjs-side-playlist-content h2 i {
     margin-right: 15px;
     cursor: pointer;
+}
+
+.vjs-side-playlist-container {
+    overflow-x: auto;
 }
 
 .vjs-side-playlist-item {
@@ -80,6 +87,7 @@
     font-size: 18px;
     color: #e4e3d1;
     text-shadow: none;
+    margin-left: 10px;
 }
 
 .vjs-side-playlist-item .close:hover {

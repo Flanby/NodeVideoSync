@@ -1,11 +1,16 @@
+var uploading = false;
 $(function() {
     $('#upload').on('show.bs.modal', function (e) {
-        $(".select-file .btn").removeClass("btn-success btn-primary btn-danger").addClass("btn-primary");
+        if (uploading)
+            return;
+        $(".select-file .btn").removeClass("btn-success btn-primary btn-danger bg-warning").addClass("btn-primary");
         $(".select-file .btn").html("Browse...");
         $("#upload form input[type=file]").val("");
     })
 
     $(".select-file").click(function() {
+        if (uploading)
+            return;
         $("#upload form input[type=file]").click();
     });
 
@@ -20,6 +25,9 @@ $(function() {
     });
 
     $("#upload .modal-footer .btn-success").click(function() {
+        if (uploading)
+            return;
+
         if ($("#upload form input[name=token]").val().length != 16) {
             return ;
         }
@@ -42,6 +50,7 @@ $(function() {
             processData: false,
 
             beforeSend: function (xhr) {
+                uploading = true;
                 $("#upload .progress-bar").removeClass("bg-success bg-danger").addClass("progress-bar-animated");
                 $(".select-file .btn").removeClass("btn-success btn-primary btn-danger");
             },
@@ -63,13 +72,18 @@ $(function() {
             },
         }).done(function( data, textStatus, jqXHR ) {
             $("#upload .progress-bar").removeClass("progress-bar-animated");
-            if (jqXHR.status == 200)
+
+            if (jqXHR.status == 200 && data == "OK")
                 $("#upload .progress-bar").addClass("bg-success");
+            else if (jqXHR.status == 200 && data == "FAIL")
+                $("#upload .progress-bar").addClass("bg-warning");   
             else
                 $("#upload .progress-bar").addClass("bg-danger");
         }).fail(function() {
             $("#upload .progress-bar").removeClass("progress-bar-animated");
             $("#upload .progress-bar").addClass("bg-danger");
+        }).always(function () {
+            uploading = false;
         });
     });
 });

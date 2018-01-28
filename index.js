@@ -49,7 +49,7 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
     uploadToken = null;
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
-            fs.rename(path.resolve(upload.getDownloadDir(), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) {
+            fs.rename(path.resolve(config.get("downloadFolder"), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) {
                 if (err) {
                     console.log(err);
                     res.writeHead(500);
@@ -58,7 +58,12 @@ router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
                 }
 
                 res.writeHead(200);
-                res.end("Succesfully upload \""+rq.body["upload-file"]+"\"");
+                //res.write("Succesfully upload \""+rq.body["upload-file"]+"\"");
+
+                if (upload.createVideoThumbnail(rq.body["upload-file"]))
+                    res.end("OK");
+                else
+                    res.end("FAIL");
             });
         }
         else {
@@ -145,6 +150,7 @@ var playlist = require("./socketAPI/playlist");
 
 io.on('connection', function (socket) {
     // upload
+
     socket.on("getUploadToken", function (data) {
         if (typeof data.pass == "undefined") {
             return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
@@ -166,6 +172,7 @@ io.on('connection', function (socket) {
     });
 
     // user/chat
+
     socket.on('login', user.login);
     socket.on('disconnect', user.logout);
     socket.on('chatMsg', user.chatMsg);
@@ -176,6 +183,7 @@ io.on('connection', function (socket) {
     socket.on('play', video.play);
     socket.on('pause', video.pause);
     socket.on("videoClub", video.listMoviesFile);
+    socket.on("currentVideo", video.getCurrentVideo);
 
     // Playlist
 

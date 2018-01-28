@@ -11,6 +11,8 @@ class SidePlaylist extends Component {
     }
 
     setCurrentVideo(nc) {
+        if (nc < 0 || nc > this.items.length)
+            return;
         if (this.currentItem != -1)
             this.items[this.currentItem].el().classList.remove("current");
         this.items[this.currentItem = nc].el().classList.add("current");

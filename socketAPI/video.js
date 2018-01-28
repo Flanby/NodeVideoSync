@@ -164,3 +164,7 @@ function changeVideo(vid) {
 
     io.emit("currentlyAiring", currentVideo);
 }
+
+exports.getCurrentVideo = function () {
+    this.emit("currentlyAiring", currentVideo);
+}

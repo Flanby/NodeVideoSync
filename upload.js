@@ -47,6 +47,7 @@ exports.createVideoThumbnail = function (file) {
                         Math.floor(duration / 3600).toString().padStart(2, '0') + ":" + Math.floor(duration / 60 % 60).toString().padStart(2, '0') + ":" + Math.floor(duration % 60).toString().padStart(2, '0') + "." + Math.floor(duration * 1000 % 1000).toString().padStart(3, '0') +
                         " -s " + width + "x" + height +
                         " -vframes 1 '" + thumbPath + "'");
+            fs.accessSync(thumbPath, fs.constants.R_OK);
         } catch (e) {
             return false;
         }

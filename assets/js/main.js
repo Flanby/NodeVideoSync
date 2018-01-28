@@ -106,6 +106,7 @@ window.onload = function() {
 
     socket.emit('login', { "pseudo": pseudo = prompt("Please enter your name", 'Flan '+randName())});
     socket.emit("listUsers");
+    socket.emit("currentVideo");
 
     socket.on("pseudoInvalide", function() {
         socket.emit('login', { "pseudo": pseudo = prompt("Please enter another name", 'Flan '+randName())});
@@ -116,7 +117,7 @@ window.onload = function() {
         addMsg("<b>"+data.old+"</b> is now known as <b>"+data.new+"</b>", 1);
         
         if (pseudo == data.old)
-            data.new;
+            pseudo = data.new;
 
         var list = document.querySelector(".usersList");
         for (var i = 0; list.childElementCount > i; i++)
