@@ -48,7 +48,6 @@ exports.createVideoThumbnail = function (file) {
                         " -s " + width + "x" + height +
                         " -vframes 1 '" + thumbPath + "'");
         } catch (e) {
-            console.log("Thumbnail:", e);
             return false;
         }
     }
