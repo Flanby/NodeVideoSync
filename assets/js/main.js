@@ -305,45 +305,8 @@ window.onload = function() {
         socket.emit("playlistPrev");
     }
 
-    document.querySelector("button.playlist").onclick = function() {
-        socket.emit("getPlaylist");
-    }
-
     socket.on("playlist", function(data) {
-        
         video.SidePlaylist.setPlaylist(data);
-
-        // var box = document.querySelector("#playlist .modal-body");
-        // box.innerHTML = "";
-
-        // for (var i = 0; i < data.playlist.length; i++) {
-        //     var div = document.createElement('div');
-        //     div.classList.add("playVid");
-
-        //     if (i == data.offset)
-        //         div.classList.add("current");
-
-        //     div.innerHTML = "<img src='/public/img/" + 
-        //                     (data.playlist[i].src.type == 'video/youtube' ? "yt" : "vid")+".png' alt='ico' />" + 
-        //                     (data.playlist[i].src.type == 'video/youtube' ? "<a href=\"" + data.playlist[i].src.src + "\">" : "") +
-        //                     data.playlist[i].name + 
-        //                     (data.playlist[i].src.type == 'video/youtube' ? "</a>" : "") +
-        //                     '<button type="button" class="close" data-id="'+data.playlist[i].id+'">&times;</button>';
-        //     div.dataset.id = data.playlist[i].id;
-
-        //     div.querySelector(".close").onclick = function(event) {
-        //         event.stopPropagation();
-        //         this.parentElement.parentElement.removeChild(this.parentElement);
-        //         socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
-        //     };
-        //     div.onclick = function() {
-        //         socket.emit("playVideoPlaylist", {id: this.dataset.id});
-        //         $("#playlist").modal("hide");
-        //     };
-        //     box.appendChild(div);
-        // }
-
-        // $('#playlist').modal('show');
     });
 
     // Video Ended
