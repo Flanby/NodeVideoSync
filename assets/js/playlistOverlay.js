@@ -84,7 +84,6 @@ class SidePlaylistItem extends ClickableComponent {
             thumb = "/public/img/thumb/" + this.options_.thumb;
         var thumHolder = dom.createEl("div", {className: "thumb-containeur"});
         thumHolder.appendChild(dom.createEl("img", {}, {src: thumb, alt: "thumbnail"}));
-        console.log(this.options_.duration);
         if (this.options_.duration != "")
             thumHolder.appendChild(dom.createEl("span", {className: "time", innerText: this.options_.duration}))
 
