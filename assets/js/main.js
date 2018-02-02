@@ -11,6 +11,15 @@ window.onload = function() {
     video = videojs(document.querySelector('.video-js'));
     video.SidePlaylist();
 
+    video.SidePlaylist().on("SidePlaylist.show", () => socket.emit("getPlaylist"));
+    video.SidePlaylist().on("SidePlaylist.next", () => socket.emit("playlistNext"));
+    video.SidePlaylist().on("SidePlaylist.prev", () => socket.emit("playlistPrev"));
+    video.SidePlaylist().on("SidePlaylist.upload", () => $("#upload").modal("show"));
+    video.SidePlaylist().on("SidePlaylist.add", () => socket.emit("videoClub"));
+    video.SidePlaylist().on("SidePlaylist.rm", (e, data) => socket.emit("removeFromPlaylist", {id: data.videoId}));
+    video.SidePlaylist().on("SidePlaylist.playVid", (e, data) => socket.emit("playVideoPlaylist", {id: data.videoId}));
+    
+
     // Chat Commands
     var cmds = {
         "/help": {func: displayHelp, params: [], description: "Display this help"},
@@ -307,7 +316,7 @@ window.onload = function() {
     }
 
     socket.on("playlist", function(data) {
-        video.SidePlaylist.setPlaylist(data);
+        video.SidePlaylist().setPlaylist(data);
     });
 
     // Video Ended

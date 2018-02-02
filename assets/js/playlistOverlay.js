@@ -25,8 +25,14 @@ class SidePlaylist extends Component {
 
         this.listContainer = dom.createEl("div", {className: "vjs-side-playlist-container"});
 
-        title.appendChild(dom.createEl("i", {className: "fa fa-arrow-right", onclick: () => document.querySelector(".vjs-side-playlist-overlay").style.width = "0"}));
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "arrow-right", title: "Hide Playlist", clickCallback: () => this.hide()}).el());
+
         title.appendChild(document.createTextNode("Playlist"));
+
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "backward", title: "Previous", clickEvent: "SidePlaylist.prev"}).el());
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "forward", title: "Next", clickEvent: "SidePlaylist.next"}).el());
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "upload", title: "Upload Video", clickEvent: "SidePlaylist.upload"}).el());
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "plus", title: "Add Video", clickEvent: "SidePlaylist.add"}).el());
 
         content.appendChild(title);
         content.appendChild(this.listContainer);
@@ -47,12 +53,39 @@ class SidePlaylist extends Component {
         this.listContainer.appendChild(item.el());
     }
 
+    removeVid(id) {
+        for (var i = 0; i < this.items.length; i++)
+            if (this.items[i].id == id) {
+                var tmp = [];
+
+                for (var j = this.items.length - 1; i < j; j--)
+                    tmp.push(this.items.pop());
+
+                this.listContainer.removeChild(this.items.pop().el());
+                this.items = this.items.concat(tmp.reverse());
+
+                this.player_.SidePlaylist().trigger("SidePlaylist.rm", {videoId: id});
+
+                break ;
+            }
+    }
+
     resetData() {
         while (this.items.length) {
             var tmp = this.items.pop();
             this.listContainer.removeChild(tmp.el());
             tmp.dispose();
         }
+    }
+
+    show() {
+        this.player_.SidePlaylist().trigger("SidePlaylist.show");
+        this.el_.style.width = "450px";
+    }
+
+    hide() {
+        this.player_.SidePlaylist().trigger("SidePlaylist.hide");
+        this.el_.style.width = "0px";
     }
 }
 
@@ -96,17 +129,18 @@ class SidePlaylistItem extends ClickableComponent {
 
         el.appendChild(thumHolder);
         el.appendChild(textContaineur);
-        el.appendChild(dom.createEl("button", {innerHTML: "&times;", className: "close", onclick: function(event) {
+
+        var self = this;
+        el.appendChild(new SidePlaylistButton(this.player_, {icon: "times", CSSClass: "vjs-side-playlist-remove", clickCallback: function(event) {
             event.stopPropagation();
-            socket.emit("removeFromPlaylist", {id: this.parentElement.dataset.id});
-            this.parentElement.parentElement.removeChild(this.parentElement);
-        }}, {type: "button"}));
+            self.player_.SidePlaylist().removeVid(self.options_.id);
+        }}).el());
 
         return el;
     }
 
     handleClick(e) {
-        socket.emit("playVideoPlaylist", {id: this.id});
+        this.player_.SidePlaylist().trigger("SidePlaylist.playVid", {videoId: this.id});
     }
 }
 
@@ -120,40 +154,53 @@ class SidePlaylistButton extends Button {
     }
 
     createEl() {
+        if (typeof this.options_.title == "string")
+            this.controlText_ = this.options_.title;
         var el = super.createEl();
-        el.appendChild(dom.createEl("i", {className: "fa fa-bars"}));
+        el.appendChild(dom.createEl("i", {className: "fa fa-"+(typeof this.options_.icon == "string" ? this.options_.icon : "question-square")}));
         return el;
     }
 
     buildCSSClass() {
-        return "vjs-side-playlist-button";
+        return typeof this.options_.CSSClass == "string" ? this.options_.CSSClass : ""; 
     }
 
     handleClick(e) {
-        socket.emit("getPlaylist");
-        document.querySelector(".vjs-side-playlist-overlay").style.width = "450px";
+        if (typeof this.options_.clickEvent == "string" && this.options_.clickEvent.length != 0)
+            this.player_.SidePlaylist().trigger(this.options_.clickEvent);
+        else if (typeof this.options_.clickEvent == "object")
+            this.player_.SidePlaylist().trigger(this.options_.clickEvent.name, this.options_.clickEvent.data);
+
+        if (typeof this.options_.clickCallback == "function")
+            this.options_.clickCallback(e);
     }
 }
-
-SidePlaylistButton.prototype.controlText_ = 'Display Playlist';
 
 Component.registerComponent('SidePlaylistButton', SidePlaylistButton);
 
 
-var plugin = function(options) {
-    this.addChild('SidePlaylistButton', {});
-    this.playlistUI = this.addChild('SidePlaylist', {});
-};
+const Plugin = videojs.getPlugin('plugin');
+class SidePlaylistPlugin extends Plugin {
+    constructor(player, options) {
+        super(player, options);
 
-plugin.setPlaylist = function(data) {
-    video.playlistUI.resetData();
+        player.addChild('SidePlaylistButton', {icon: "bars", title: "Show Playlist", CSSClass: "vjs-side-playlist-button", clickCallback: () => this.playlistUI.show()});
+        this.playlistUI = player.addChild('SidePlaylist', {});
+    }
 
-    for (var i = 0; i < data.playlist.length; i++)
-        video.playlistUI.addItem(new SidePlaylistItem(this, data.playlist[i]));
+    setPlaylist(data) {
+        this.playlistUI.resetData();
 
-    video.playlistUI.setCurrentVideo(data.offset);
+        for (var i = 0; i < data.playlist.length; i++)
+            this.playlistUI.addItem(new SidePlaylistItem(this.player, data.playlist[i]));
+
+        this.playlistUI.setCurrentVideo(data.offset);
+    }
+
+    removeVid(id) {
+        this.playlistUI.removeVid(id);
+    }
 }
-  
-plugin.VERSION = '0.0.1';
+SidePlaylistPlugin.prototype.VERSION = '0.0.1';
 
-registerPlugin('SidePlaylist', plugin);
+registerPlugin('SidePlaylist', SidePlaylistPlugin);
