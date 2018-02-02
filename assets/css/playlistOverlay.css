@@ -105,6 +105,7 @@
 
 .vjs-side-playlist-item.current .title{
     color: #9DFF00;
+    text-shadow: 0 0 2px #fff, 0 0 4px #fff, 0 0 6px #fff, 0 0 8px #9DFF00, 0 0 14px #9DFF00, 0 0 16px #9DFF00, 0 0 20px #9DFF00, 0 0 30px #9DFF00;
 }
 
 .vjs-side-playlist-item:nth-child(even) {

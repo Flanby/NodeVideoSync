@@ -114,8 +114,6 @@ window.onload = function() {
     // Chat/User
 
     socket.emit('login', { "pseudo": pseudo = prompt("Please enter your name", 'Flan '+randName())});
-    socket.emit("listUsers");
-    socket.emit("currentVideo");
 
     socket.on("pseudoInvalide", function() {
         socket.emit('login', { "pseudo": pseudo = prompt("Please enter another name", 'Flan '+randName())});
@@ -139,10 +137,17 @@ window.onload = function() {
     socket.on('newUser', function (data) {
         addMsg("<b>"+data.name+"</b> is now online", 1);
 
-        var li = document.createElement('li');
-        li.innerHTML = data.name;
+        if (data.name == pseudo) {
+            socket.emit("listUsers");
+            socket.emit("currentVideo");
+            socket.emit("getPlaylist");
+        }
+        else {
+            var li = document.createElement('li');
+            li.innerHTML = data.name;
 
-        document.querySelector(".usersList").appendChild(li);
+            document.querySelector(".usersList").appendChild(li);
+        }
     });
 
     socket.on('userLeave', function (data) {
@@ -256,6 +261,8 @@ window.onload = function() {
             video.addRemoteTextTrack({src: "/sub/" + data.sub, srclang: "fr", mode: 'showing', default: true}, false)
 
         addMsg("Current video <b>"+data.name+"</b> added by <b>"+data.user+"</b> at <b>"+timeConvertion(video.currentTime())+"</b>", 3);
+        video.SidePlaylist().changeVid(data.id);
+        
         window.setTimeout(function() { receve = false; }, 500)
     });
 
@@ -317,6 +324,14 @@ window.onload = function() {
 
     socket.on("playlist", function(data) {
         video.SidePlaylist().setPlaylist(data);
+    });
+
+    socket.on("playlistRm", function(data) {
+        video.SidePlaylist().removeVid(data.id);
+    });
+
+    socket.on("playlistAdd", function(data) {
+        video.SidePlaylist().addVid(data);
     });
 
     // Video Ended

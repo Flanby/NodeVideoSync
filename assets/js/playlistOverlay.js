@@ -10,12 +10,22 @@ class SidePlaylist extends Component {
         this.currentItem = -1;
     }
 
-    setCurrentVideo(nc) {
-        if (nc < 0 || nc > this.items.length)
+    setCurrentVideo(id) {
+        if (id < 0)
             return;
         if (this.currentItem != -1)
-            this.items[this.currentItem].el().classList.remove("current");
-        this.items[this.currentItem = nc].el().classList.add("current");
+            for (var i = 0; i < this.items.length; i++)
+                if (this.items[i].id == this.currentItem) {
+                    this.items[i].el().classList.remove("current");
+                    break;
+                }
+        
+        for (var i = 0; i < this.items.length; i++)
+            if (this.items[i].id == id) {
+                this.items[i].el().classList.add("current");
+                this.currentItem = id;
+                break;
+            }
     }
 
     createEl() {
@@ -203,8 +213,16 @@ class SidePlaylistPlugin extends Plugin {
         this.playlistUI.setCurrentVideo(data.offset);
     }
 
+    addVid(data) {
+        this.playlistUI.addItem(new SidePlaylistItem(this.player, data));
+    }
+
     removeVid(id) {
         this.playlistUI.removeVid(id);
+    }
+
+    changeVid(id) {
+        this.playlistUI.setCurrentVideo(id);
     }
 }
 SidePlaylistPlugin.prototype.VERSION = '0.0.1';

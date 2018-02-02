@@ -13,11 +13,13 @@ function changeVideo(vid) {
 }
 
 exports.get = function() {
-    this.emit("playlist", {playlist: playlist, offset: actualvid});
+    if (0 > actualvid || actualvid >= playlist.length)
+        actualvid = -1;
+    this.emit("playlist", {playlist: playlist, offset: (actualvid == -1 ? -1 : playlist[actualvid].id)});
 };
 
 exports.add = function(data) {
-    var u = users.searchUser(this.id);
+    var u = users.searchUser(this.id), self = this;
     if (u == null)
         return ;
     video.prepareVideo(data.src, u.name, function(vid) {
@@ -25,6 +27,9 @@ exports.add = function(data) {
             return;
         vid.id = idUnique++;
         playlist.push(vid);
+
+        self.emit("playlistAdd", vid);
+        self.broadcast.emit("playlistAdd", vid);
 
         if (actualvid == -1)
             nextVid();
@@ -36,14 +41,22 @@ exports.remove = function(data) {
         if (playlist[i].id == data.id) {
             var tmp = [];
 
-            for (var y = playlist.length - 1; i <= y; y--) {
-                if (y == i) {
-                    playlist.pop();
-                    playlist = playlist.concat(tmp.reverse());
-                    return;
+            for (var y = playlist.length - 1; i < y; y--)
+                tmp.push(playlist.pop());
+
+            var id = playlist.pop().id;
+            playlist = playlist.concat(tmp.reverse());
+
+            this.emit("playlistRm", {id: id});
+            this.broadcast.emit("playlistRm", {id: id});
+
+            if (i == actualvid) {
+                if (i == playlist.length)
+                    prevVid();
+                else {
+                    actualvid--;
+                    nextVid();
                 }
-                else
-                    tmp.push(playlist.pop());
             }
             return ;
         }
@@ -62,7 +75,8 @@ function nextVid() {
     changeVideo(playlist[actualvid]);
 }
     
-exports.prev = function() {
+exports.prev = prevVid;
+function prevVid() {
     actualvid--;
     if (actualvid < 0) {
         actualvid = 0;
@@ -72,7 +86,7 @@ exports.prev = function() {
         actualvid = playlist.length - 1
 
     changeVideo(playlist[actualvid]);
-};
+}
 
 exports.playVideo = function(data) {
     for (var i = 0; i < playlist.length; i++)
