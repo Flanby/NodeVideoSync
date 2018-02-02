@@ -21,20 +21,26 @@ class SidePlaylist extends Component {
     createEl() {
         var el = dom.createEl("div", {className: "vjs-side-playlist-overlay"}),
             content = dom.createEl("div", {className: "vjs-side-playlist-content"}),
+            titleContainer = dom.createEl("div", {className: "vjs-side-playlist-title-container"}),
+            menuBar = dom.createEl("div", {className: "vjs-side-playlist-menu-bar"}),
             title = dom.createEl("h2", {});
 
+        
+        title.appendChild(new SidePlaylistButton(this.player_, {icon: "arrow-right", title: "Hide Playlist", clickCallback: () => this.hide()}).el());
+        title.appendChild(document.createTextNode("Playlist"));
+        
+        menuBar.appendChild(new SidePlaylistButton(this.player_, {icon: "backward", title: "Previous", clickEvent: "SidePlaylist.prev"}).el());
+        menuBar.appendChild(new SidePlaylistButton(this.player_, {icon: "forward", title: "Next", clickEvent: "SidePlaylist.next"}).el());
+        menuBar.appendChild(new SidePlaylistButton(this.player_, {icon: "upload", title: "Upload Video", clickEvent: "SidePlaylist.upload"}).el());
+        menuBar.appendChild(new SidePlaylistButton(this.player_, {icon: "plus", title: "Add Video", clickEvent: "SidePlaylist.add"}).el());
+        
+        titleContainer.appendChild(title);
+        titleContainer.appendChild(dom.createEl("div", {className: "separator"}));
+        titleContainer.appendChild(menuBar);
+        
         this.listContainer = dom.createEl("div", {className: "vjs-side-playlist-container"});
 
-        title.appendChild(new SidePlaylistButton(this.player_, {icon: "arrow-right", title: "Hide Playlist", clickCallback: () => this.hide()}).el());
-
-        title.appendChild(document.createTextNode("Playlist"));
-
-        title.appendChild(new SidePlaylistButton(this.player_, {icon: "backward", title: "Previous", clickEvent: "SidePlaylist.prev"}).el());
-        title.appendChild(new SidePlaylistButton(this.player_, {icon: "forward", title: "Next", clickEvent: "SidePlaylist.next"}).el());
-        title.appendChild(new SidePlaylistButton(this.player_, {icon: "upload", title: "Upload Video", clickEvent: "SidePlaylist.upload"}).el());
-        title.appendChild(new SidePlaylistButton(this.player_, {icon: "plus", title: "Add Video", clickEvent: "SidePlaylist.add"}).el());
-
-        content.appendChild(title);
+        content.appendChild(titleContainer);
         content.appendChild(this.listContainer);
 
         el.appendChild(content);
