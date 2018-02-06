@@ -40,7 +40,7 @@
     top: 0;
     right: 0;
     height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     transition: 0.5s;
 }
 
@@ -90,6 +90,8 @@
 
 .vjs-side-playlist-container {
     overflow-x: auto;
+    min-height: 100px;
+    flex: 1;
 }
 
 .vjs-side-playlist-item {
