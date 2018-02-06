@@ -57,7 +57,9 @@ exports.remove = function(data) {
                     actualvid--;
                     nextVid();
                 }
-            }
+            } 
+            else if (i < actualvid)
+                actualvid--;
             return ;
         }
 };
