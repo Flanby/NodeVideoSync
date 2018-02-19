@@ -288,7 +288,7 @@ window.onload = function() {
     }
 
     document.querySelector("button.validateYT").onclick = function() {
-        socket.emit("addToPlaylist", {src: {src: document.querySelector("input.inputYT").value, type: 'video/youtube'}});
+        socket.emit("addToPlaylist", {video: {src: document.querySelector("input.inputYT").value, type: 'video/youtube'}, origin: "Youtube"});
         //socket.emit("changeVideo", {src: document.querySelector("input.inputYT").value});
         $('#videoClubYT').modal('hide');
         document.querySelector("input.inputYT").value = "";
@@ -303,7 +303,7 @@ window.onload = function() {
             div.classList.add("choice");
             div.innerHTML = data.files[i];
             div.onclick = function() {
-                socket.emit("addToPlaylist", {src: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}});
+                socket.emit("addToPlaylist", {video: {src: "/video/"+this.innerHTML, type: 'video/'+this.innerHTML.replace(/^.*\.([^.]*)$/gi, '$1').toLowerCase()}, origin: "Local"});
                 $('#videoClub').modal('hide');
             }
             box.appendChild(div);

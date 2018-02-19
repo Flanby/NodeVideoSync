@@ -22,7 +22,7 @@ exports.add = function(data) {
     var u = users.searchUser(this.id), self = this;
     if (u == null)
         return ;
-    video.prepareVideo(data.src, u.name, function(vid) {
+    video.prepareVideo(data, u.name, function(vid) {
         if (vid == null)
             return;
         vid.id = idUnique++;

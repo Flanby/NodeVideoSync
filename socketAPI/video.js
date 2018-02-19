@@ -91,10 +91,10 @@ function fileDurationConverter(time = "") {
 }
 
 exports.prepareVideo = prepareVideo;
-function prepareVideo(src, username, func) {
-    var vid = {user: username, src: src, sub: "", thumb: "", duration: ""};
+function prepareVideo(option, username, func) {
+    var vid = {user: username, src: option.video, origin: option.origin, sub: "", thumb: "", duration: ""};
 
-    if (vid.src.type == 'video/youtube') {
+    if (vid.origin == 'Youtube') {
         var key = config.get("googleAPIKey");
 
         if (typeof key != "string" || key.length < 0) {
@@ -126,7 +126,7 @@ function prepareVideo(src, username, func) {
             func(vid);
         });
     }
-    else {
+    else if (vid.origin == "Local") {
         try {
             fs.accessSync(path.resolve(config.get("videoFolder"), vid.src.src.substring(7)), fs.constants.R_OK);
             vid.name = vid.src.src.replace(/^\/video\/(.*)\.[^.]*$/ig, '$1');
@@ -150,6 +150,10 @@ function prepareVideo(src, username, func) {
             vid = null;
         }
 
+        func(vid);
+    }
+    else if (vid.origin == "P2P") {
+        vid.name = option.name;
         func(vid);
     }
 }
