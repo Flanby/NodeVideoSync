@@ -169,8 +169,12 @@ exports.upload = function(req, res, masterCallback) {
             }
 
             // if line ending not define
-            if (lineEnding == null)
-                lineEnding = ("" + buffData).match(/^([\r\n]+)/i)[0];
+            if (lineEnding == null) {
+                lineEnding = ("" + buffData).match(/^([\r\n]+)/i);
+                if (lineEnding == null)
+                    return ;
+                lineEnding = lineEnding[0];
+            }
 
             var linePos;
             while ((linePos = buffData.indexOf(lineEnding)) != -1 && (linePos < pos || pos == -1)) {
@@ -239,6 +243,7 @@ exports.upload = function(req, res, masterCallback) {
 
     // Remove all receve Data and File
     function onFail() {
+        console.log("Fail");
         if (stream != null)
             stream.end("", "binary", function() {
                 stream = null;

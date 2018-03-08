@@ -1,0 +1,173 @@
+:root {
+    --blue: #2FBCEB;
+    --dark: #202F37;
+    --pink: #FF7FB8;
+    --gray: #707C83;
+    --green: #9DFF00;
+    --light: #e4e3d1;
+}
+
+html {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.sideMenu {
+    background: gainsboro;
+    width: 250px;
+    height: 100vh;
+}
+
+.sideMenu .title {
+    padding: 10px 10px;
+    border-bottom: 1px solid #eee;
+    margin: 0 15px;
+}
+
+.sideMenu a {
+    color: var(--dark);
+    text-decoration: none;
+    display: block;
+    padding: 2px 25px;
+    cursor: pointer;
+}
+
+.sideMenu ul {
+    list-style: none;
+    padding: 0;
+    font-size: 22px;
+}
+
+.sideMenu ul li {
+    margin: 5px 0;
+}
+
+.sideMenu a:hover, .sideMenu a .active {
+    color: var(--light);
+    background: var(--blue);
+}
+
+body {
+    background: #EEEEEE;
+    display: flex;
+}
+
+.main-content {
+    height: 100vh;
+    flex: 1;
+    overflow: auto;
+}
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+}
+
+.loader {
+    animation: bounce 2s ease-in-out infinite alternate, spin 2s linear infinite;
+    font-size: 100px;
+    color: var(--gray);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+    0% { margin-bottom: 0; }
+    100% { margin-bottom: 400px; }
+}
+
+.errorAjax {
+    font-size: 100px;
+    color: var(--gray);
+}
+
+.pad-content {
+    padding: 0 15px;
+}
+
+/* --------------------- */
+.file-upload {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    height: auto;
+}
+
+.file-upload .progress-bar {
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.file-upload .progress-text {
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    z-index: 2;
+    width: 100%;
+    text-shadow: 0 0 5px black;
+    color: white;
+}
+
+.upload table {
+    width: 100%;
+}
+
+.upload th, .upload td {
+    text-align: center;
+    padding: 5px;
+}
+
+.upload td:nth-child(3) {
+    min-width: 350px;
+}
+
+.upload td:first-child, .upload td:last-child {
+    width: 40px;
+}
+
+.upload td:first-child {
+    cursor: all-scroll;
+}
+
+.upload td:last-child:hover {
+    cursor: pointer;
+    color: var(--pink);
+}
+
+.upload tr {
+    border-bottom: 1px solid #ddd;
+    padding: 0 5px;
+}
+
+.upload td input[type=file] {
+    display: none;
+}
+
+.upload .add-upload {
+    vertical-align: middle;
+    margin-left: 15px;
+}
+
+.upload h1 {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.drag-on-bottom {
+    box-shadow: 0px 7px 10px -5px var(--blue);
+}
+
+.drag-on-top {
+    box-shadow: 0px -7px 10px -5px var(--blue);
+}
+
+/* --------------------- */

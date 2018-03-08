@@ -24,7 +24,9 @@ window.onload = function() {
     var cmds = {
         "/help": {func: displayHelp, params: [], description: "Display this help"},
         "/name": {path: "login", params: ["pseudo"], description: "Change pseudo"},
-        "/getUploadToken": {path: "getUploadToken", params: ["pass"], description: "Get the upload token"}
+        "/getUploadToken": {path: "getUploadToken", params: ["pass"], description: "Get the upload token"},
+        "/getAdminToken": {path: "getAdminToken", params: ["pass"], description: "Get the admin token"},
+        "/eraseAdminToken": {path: "eraseAdminToken", params: ["pass"], description: "Erase the admin token"}
     }
 
     function displayHelp() {

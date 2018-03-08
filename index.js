@@ -12,11 +12,60 @@ app.listen(3000);
 
 // Front page
 router.add("GET", "/", function (req, res) {
-    fs.readFile(__dirname + '/index.html',
+    fs.readFile(__dirname + '/template/index.html',
     function (err, data) {
       if (err) {
         res.writeHead(500);
         return res.end('Error loading index.html');
+      }
+
+      res.writeHead(200);
+      res.end(data);
+    });
+});
+
+// Admin page
+router.add("GET", "/admin/{token, type=str, length=16}/", function (req, res) {
+    fs.readFile(__dirname + '/template/admin.html',
+    function (err, data) {
+      if (err) {
+        res.writeHead(500);
+        return res.end('Error loading admin.html');
+      }
+
+      res.writeHead(200);
+      res.end(data);
+    });
+});
+
+// Partial Admin page
+router.add("GET", "/admin/{token, type=str, length=16}/{page}", function (req, res) {
+    if (req.urlParams.token != adminToken) {
+        req.pause();
+        res.writeHead(401);
+        res.end("Bad Token");
+        return ;
+    }
+
+    fs.readFile(__dirname + '/template/partial/admin/' + req.urlParams.page,
+    function (err, data) {
+      if (err) {
+        res.writeHead(404);
+        return res.end(req.urlParams.page + ' not found');
+      }
+
+      res.writeHead(200);
+      res.end(data);
+    });
+});
+
+// Partial page
+router.add("GET", "/partial/{page}", function (req, res) {
+    fs.readFile(__dirname + '/template/partial/' + req.urlParams.page,
+    function (err, data) {
+      if (err) {
+        res.writeHead(404);
+        return res.end(req.urlParams.page + ' not found');
       }
 
       res.writeHead(200);
@@ -39,14 +88,16 @@ router.add("GET", "/public/{file, type=path}", function(req, res) {
 
 // Upload file
 router.add("POST", "/upload/{token, type=str, length=16}", function(req, res) {
-    if (req.urlParams.token != uploadToken) {
+    if (req.urlParams.token != uploadToken && req.urlParams.token != adminToken) {
         req.pause();
         res.writeHead(401);
         res.end("Bad Token");
         return ;
     }
 
-    uploadToken = null;
+    if (req.urlParams.token == uploadToken)
+        uploadToken = null;
+
     upload.upload(req, res, function (rq, rs) {
         if (typeof rq.body["upload-file"] != "undefined") {
             fs.rename(path.resolve(config.get("downloadFolder"), rq.body["upload-file"]), path.resolve(__dirname, config.get("videoFolder"), rq.body["upload-file"]), function(err) {
@@ -142,6 +193,7 @@ function handler (req, res) {
 }
 
 var uploadToken = null;
+var adminToken = null;
 
 config.set('SocketIOServ', io);
 var user = require("./socketAPI/user");
@@ -166,6 +218,40 @@ io.on('connection', function (socket) {
         if (data.pass == config.get("rootPass")) {
             uploadToken = randStr(16);
             socket.emit("chatMsg", {msg: "<b>Sever:</b> new token is <b>" + uploadToken + "</b>", color: 1});
+        }
+        else
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
+    });
+
+    socket.on("getAdminToken", function (data) {
+        if (typeof data.pass == "undefined") {
+            return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
+        }
+
+        function randStr(length) {
+            var str = "";
+            for (var i = 0; i < length; i++)
+                str += Math.floor(Math.random() * 256).toString(16);
+            return Buffer.from(str).toString('base64').substr(0, length);
+        }
+
+        if (data.pass == config.get("rootPass")) {
+            if (adminToken == null)
+                adminToken = randStr(16);
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> token is <b>" + adminToken + "</b>", color: 1});
+        }
+        else
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
+    });
+
+    socket.on("eraseAdminToken", function (data) {
+        if (typeof data.pass == "undefined") {
+            return socket.emit("chatMsg", {msg: "<b>Sever:</b> Invalid request", color: 1});
+        }
+
+        if (data.pass == config.get("rootPass")) {
+            adminToken = null;
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> Admin token is now unset", color: 1});
         }
         else
             socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
