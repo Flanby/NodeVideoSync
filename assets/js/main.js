@@ -343,4 +343,10 @@ window.onload = function() {
         socket.emit("videoEnded");
         window.setTimeout(function() { receve = false; }, 500)
     });
+
+    // Admin
+
+    socket.on("adminToken", function(data) {
+        sessionStorage.setItem("adminToken", data.token);
+    });
 }

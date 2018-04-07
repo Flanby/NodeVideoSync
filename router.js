@@ -84,6 +84,48 @@ exports.add = function(request, name, callback) {
         addStaticRoute(request, name, callback);
 }
 
+function parseBody(req, res, callback) {
+    if (req.method == "POST" && typeof req.headers["content-type"] != "undefined") {
+        var content = req.headers["content-type"].split(";")[0];
+
+        if (content == "application/form-data" || content == "multipart/form-data") {
+            callback(req, res); // Call upload.js ?
+        }
+        else {
+            var body = '';
+    
+            req.on('data', function (data) {
+                body += data;
+    
+                if (body.length > 1e6) { 
+                    req.connection.destroy();
+                    res.writeHead(413);
+                    res.end("");
+                }
+            });
+
+            req.on('end', function () {
+                try {
+                    if (content == "application/x-www-form-urlencoded")
+                        req.body = require('querystring').parse(body);
+                    else if (content == "application/json")
+                        req.body = JSON.parse(body);
+                    else
+                        req.body = body;
+        
+                    callback(req, res);
+                } catch (e) {
+                    console.log(e);
+                    res.writeHead(400);
+                    res.end();
+                }
+            });
+        }
+    }
+    else
+        callback(req, res);
+}
+
 exports.exec = function(req, res) {
     var urldata = url.parse(req.url, true), name = urldata.pathname;
     req.query = urldata.query;
@@ -91,7 +133,7 @@ exports.exec = function(req, res) {
     //console.log("Request route : \""+req.method+"\":\""+name+"\"");
     
     if (routes.static.hasOwnProperty(req.method) === true && routes.static[req.method].hasOwnProperty(name) === true)
-        return routes.static[req.method][name](req, res);
+        return parseBody(req, res, routes.static[req.method][name]);
     
     if (routes.dynamic.hasOwnProperty(req.method)) {
         var keys = Object.keys(routes.dynamic[req.method]);
@@ -105,7 +147,7 @@ exports.exec = function(req, res) {
                         req.urlParams[routes.dynamic[req.method][keys[i]].params[j-1].name] = decodeURI(search[j]);
                 }
 
-                return routes.dynamic[req.method][keys[i]].callback(req, res);
+                return parseBody(req, res, routes.dynamic[req.method][keys[i]].callback);
             }
     }
 

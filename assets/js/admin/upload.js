@@ -1,14 +1,3 @@
-function randName(length = 8) {
-    var str = "";
-    for (var i = 0; i < length; i++)
-        str += Math.floor(Math.random() * 256).toString(16);
-    return btoa(str).substr(0, length);
-}
-
-function createElementOpt(tag, option = {}) {
-    return Object.assign(document.createElement(tag), option);
-}
-
 var input = null;
 function add_file_to_upload() {
     if (input != null)
@@ -24,71 +13,8 @@ function add_file_to_upload() {
         else
             return ;
 
-        var row = createElementOpt("tr", {
-            id: "row-"+id, 
-            draggable: true, 
-            ondragstart: function(e) {
-                e.dataTransfer.setData("data", e.target.id);
-            },
-            ondragover: function(e) {
-                e.preventDefault();
-                if (this.offsetHeight / 2 > e.offsetY)
-                    $(this).removeClass("drag-on-top drag-on-bottom").addClass("drag-on-top");
-                else
-                    $(this).removeClass("drag-on-top drag-on-bottom").addClass("drag-on-bottom");
-            },
-            ondragleave: function (e) {
-                $(this).removeClass("drag-on-top drag-on-bottom");
-            },
-            ondrop: function(e) {
-                var tbody = document.getElementsByTagName("tbody")[0],
-                    movedRow = document.getElementById(e.dataTransfer.getData("data"));
-                    
-                if (movedRow != null)
-                    if (this.classList.contains("drag-on-top"))
-                        tbody.insertBefore(movedRow, this);
-                    else {
-                        for (var i = 0; i < tbody.childNodes.length; i++)
-                            if (tbody.childNodes[i].id == this.id) {
-                                if (i + 1 < tbody.childNodes.length)
-                                    tbody.insertBefore(movedRow, tbody.childNodes[i + 1]);
-                                else
-                                    tbody.appendChild(movedRow);
-                                break;
-                            }
-                    }
-
-                $(this).removeClass("drag-on-top drag-on-bottom");
-            },
-            ondragend: function() {
-                $(".drag-on-top, .drag-on-bottom").removeClass("drag-on-top drag-on-bottom");
-            }
-        });
-
-        row.appendChild(createElementOpt("td"))
-        row.lastChild.appendChild(createElementOpt("i", {className: "fas fa-ellipsis-v"}));
-
-        row.appendChild(createElementOpt("td"));
-        row.lastChild.appendChild(document.createTextNode(this.value.substring((this.value.indexOf('\\') >= 0 ? this.value.lastIndexOf('\\') : this.value.lastIndexOf('/')) + 1)));
-        row.lastChild.appendChild(input);
-
-        row.appendChild(createElementOpt("td"))
-        row.lastChild.appendChild(createElementOpt("div", {className: "progress file-upload"}));
-        row.lastChild.lastChild.appendChild(createElementOpt("div", {
-            className: "progress-bar progress-bar-striped progress-bar-animated", 
-            role: "progressbar", 
-            // "aria-valuenow": 0, 
-            // "aria-valuemin": 0, 
-            // "aria-valuemax": 100
-        }));
-        row.lastChild.lastChild.appendChild(createElementOpt("div", {className: "progress-text"}));
-        row.lastChild.lastChild.lastChild.appendChild(document.createTextNode("Queued"));
-
-        row.appendChild(createElementOpt("td"))
-        row.lastChild.appendChild(createElementOpt("i", {className: "fas fa-times remove-file", onclick: function() {
-            var rowToDelete = this.parentElement.parentElement;
-            rowToDelete.remove()
-        }}));
+        var row = createDragableRowLoading(id, document.getElementsByTagName("tbody")[0], this.value.substring((this.value.indexOf('\\') >= 0 ? this.value.lastIndexOf('\\') : this.value.lastIndexOf('/')) + 1));
+        row.children[1].appendChild(input);
 
         input = null;
         $("tbody").append(row);
@@ -116,7 +42,7 @@ function start_upload() {
             
             $.ajax({
                 // Your server script to process the upload
-                url: '/upload/' + window.location.pathname.substr(7, 16),
+                url: '/upload/' + sessionStorage.getItem("adminToken"),
                 type: 'POST',
         
                 // Form data

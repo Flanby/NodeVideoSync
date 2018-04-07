@@ -4,11 +4,12 @@ var fs = require('fs');
 var path = require("path");
 var router = require('./router');
 var upload = require('./upload');
+var admin = require('./admin');
 
 var config = require("./config");
 config.load(__dirname + '/config.json');
 
-app.listen(3000);
+app.listen(config.get("port"));
 
 // Front page
 router.add("GET", "/", function (req, res) {
@@ -17,41 +18,6 @@ router.add("GET", "/", function (req, res) {
       if (err) {
         res.writeHead(500);
         return res.end('Error loading index.html');
-      }
-
-      res.writeHead(200);
-      res.end(data);
-    });
-});
-
-// Admin page
-router.add("GET", "/admin/{token, type=str, length=16}/", function (req, res) {
-    fs.readFile(__dirname + '/template/admin.html',
-    function (err, data) {
-      if (err) {
-        res.writeHead(500);
-        return res.end('Error loading admin.html');
-      }
-
-      res.writeHead(200);
-      res.end(data);
-    });
-});
-
-// Partial Admin page
-router.add("GET", "/admin/{token, type=str, length=16}/{page}", function (req, res) {
-    if (req.urlParams.token != adminToken) {
-        req.pause();
-        res.writeHead(401);
-        res.end("Bad Token");
-        return ;
-    }
-
-    fs.readFile(__dirname + '/template/partial/admin/' + req.urlParams.page,
-    function (err, data) {
-      if (err) {
-        res.writeHead(404);
-        return res.end(req.urlParams.page + ' not found');
       }
 
       res.writeHead(200);
@@ -236,9 +202,12 @@ io.on('connection', function (socket) {
         }
 
         if (data.pass == config.get("rootPass")) {
-            if (adminToken == null)
+            if (adminToken == null) {
                 adminToken = randStr(16);
-            socket.emit("chatMsg", {msg: "<b>Sever:</b> token is <b>" + adminToken + "</b>", color: 1});
+                config.set("adminToken", adminToken);
+            }
+            socket.emit("chatMsg", {msg: "<b>Sever:</b> token is <b>" + adminToken + "</b>, <a href=\"/admin/\" target=_blank>Allons-y !</a>", color: 1});
+            socket.emit("adminToken", {token: adminToken});
         }
         else
             socket.emit("chatMsg", {msg: "<b>Sever:</b> Bad password", color: 1});
@@ -251,6 +220,7 @@ io.on('connection', function (socket) {
 
         if (data.pass == config.get("rootPass")) {
             adminToken = null;
+            config.set("adminToken", adminToken);
             socket.emit("chatMsg", {msg: "<b>Sever:</b> Admin token is now unset", color: 1});
         }
         else
